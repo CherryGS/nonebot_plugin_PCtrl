@@ -51,3 +51,7 @@ db_link=
 [nonebot2](https://github.com/nonebot/nonebot2) : 优秀的跨平台 python 异步机器人框架
 
 [SQLAlchemy](https://www.sqlalchemy.org/) : 完善~~文档根本看不懂~~的 ORM
+
+## 额外说明
+
+本插件初始化于 `websocket` 连接时 , http协议未经测试
