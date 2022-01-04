@@ -55,3 +55,5 @@ db_link=
 ## 额外说明
 
 本插件初始化于 `websocket` 连接时 , http协议未经测试
+
+导入时**注意大小写** `nonebot_plugin_PCtrl`
