@@ -4,6 +4,13 @@ version = "0.1.0"
 description = ""
 authors = ["CherryGS <uplliode@gmail.com>"]
 license = "MIT"
+homepage = "https://github.com/CherryGS/nonebot_plugin_PCtrl"
+repository = "https://github.com/CherryGS/nonebot_plugin_PCtrl"
+readme = "README.md"
+documentation = "https://github.com/CherryGS/nonebot_plugin_PCtrl#readme"
+packages = [
+    { include = "nonebot_plugin_PCtrl", from = '.. }
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
