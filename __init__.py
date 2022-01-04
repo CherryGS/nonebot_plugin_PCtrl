@@ -46,17 +46,22 @@ async def init_db():
     for i in plugins.items():
         if not i[1].export.ignore_global_control:
             now_plugins[i[0]] = i[1]
-    db_plugins = (await session.execute(select(pluginsCfg))).scalars().all()
+    db_plugins: List(pluginsCfg) = (
+        await session.execute(select(pluginsCfg))
+    ).scalars().all()
+    num = len(db_plugins)
     try:
         for i in db_plugins:
             if i.plugin_name not in now_plugins.keys():
+                num -= 1
                 await session.delete(i)
         name = [_.plugin_name for _ in db_plugins]
         for i in now_plugins.keys():
             if i not in name:
+                num += 1
                 session.add(pluginsCfg(plugin_name=i))
         await session.commit()
-        logger.success("插件信息初始化成功 , 初始化了 {} 个插件".format(len(db_plugins)))
+        logger.success("插件信息初始化成功 , 初始化了 {} 个插件".format(num))
     except:
         raise
     finally:
