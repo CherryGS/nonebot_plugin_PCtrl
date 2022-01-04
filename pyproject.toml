@@ -17,6 +17,7 @@ python = "^3.9"
 SQLAlchemy = "^1.4.29"
 asyncpg = "^0.25.0"
 nonebot2 = "^2.0.0-alpha.16"
+nonebot-adapter-cqhttp = "^2.0.0-alpha.16"
 
 [tool.poetry.dev-dependencies]
 
