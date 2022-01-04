@@ -6,6 +6,12 @@
 使用 SQLAlchemy + asyncpg 实现持久化
 
 功能持续增加中
+## 使用说明
+
+1. 本插件初始化于 `websocket` 连接时 , http协议上报未经测试
+2. 导入时**注意大小写** `nonebot_plugin_PCtrl`
+3. 所有命令只能由 `SUPERUSER` 激活
+4. 数据库初始化未完成之前所有事件(除元事件)都会被忽略
 
 ## 功能
 
@@ -51,9 +57,3 @@ db_link=
 [nonebot2](https://github.com/nonebot/nonebot2) : 优秀的跨平台 python 异步机器人框架
 
 [SQLAlchemy](https://www.sqlalchemy.org/) : 完善~~文档根本看不懂~~的 ORM
-
-## 额外说明
-
-本插件初始化于 `websocket` 连接时 , http协议未经测试
-
-导入时**注意大小写** `nonebot_plugin_PCtrl`
