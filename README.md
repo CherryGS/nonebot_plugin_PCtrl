@@ -3,7 +3,7 @@
 
 基于 Hook 的插件管理器 , 提供常用的管理功能
 
-使用 SQLAlchemy + asyncpg 实现持久化
+使用异步 SQLAlchemy 方言实现持久化
 
 功能持续增加中
 
