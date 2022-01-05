@@ -20,4 +20,4 @@ class Hook(object):
                 raise
 
 
-hook = Hook()
+db_init_finished = Hook()

@@ -13,7 +13,6 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql.expression import delete
 
-from ..hook import hook
 from ..models import ASession
 from ..models.global_models import pluginsBan, pluginsCfg
 
@@ -125,13 +124,6 @@ async def _(bot: Bot, event: Event, state: T_State):
     finally:
         await session.close()
 
-
-# -----------------------------------------------------------------------------
-
-_parser = ArgumentParser()
-_parser.add_argument("-u")  # 个人 qq 号
-_parser.add_argument("-g")  # 群号
-_parser.add_argument("-p")  # 插件名
 
 _cmd2 = on_shell_command("unban", parser=_parser, permission=SUPERUSER)
 

@@ -1,19 +1,18 @@
 from typing import List
-from nonebot.adapters.cqhttp import Bot
-from nonebot.adapters.cqhttp import Event
+
+from nonebot.adapters.cqhttp import Bot, Event
+from nonebot.exception import IgnoredException
+from nonebot.log import logger
 from nonebot.matcher import Matcher
+from nonebot.message import run_preprocessor
 from nonebot.permission import SUPERUSER
 from nonebot.plugin import on_command, on_shell_command
-from nonebot.log import logger
-from nonebot.message import run_preprocessor
+from nonebot.rule import ArgumentParser
 from nonebot.typing import T_State
-from sqlalchemy.sql.expression import update, Update
+from sqlalchemy import select
+
 from ..models import ASession
 from ..models.global_models import pluginsCfg
-from nonebot.exception import IgnoredException
-from nonebot.rule import ArgumentParser
-from sqlalchemy import select
-from ..hook import hook
 
 
 async def is_start(name) -> bool:

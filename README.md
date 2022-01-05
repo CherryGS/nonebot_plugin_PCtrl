@@ -11,7 +11,8 @@
 
 - [X] 全局插件开关
 - [X] 全局ban人/群
-- [ ] 全局冷却时间
+- [X] 全局冷却时间
+- [ ] 冷却时间信息显示与命令修改
 
 ## 使用说明
 
@@ -29,10 +30,39 @@
 
 ### global.ban
 
+- `/listban` 列出存在的 ban 的信息
 - `/ban -u handle -p plugin_name` ban 掉 QQ 号为 `handle` 的人使用名称为 `plugin_name` 插件的权限
 - `/ban -g handle -p plugin_name` ban 掉群号为 `handle` 的群使用名称为 `plugin_name` 插件的权限
 - `/unban -u handle -p plugin_name` 取消 ban
 - `/unban -g handle -p plugin_name` 取消 ban
+
+### global.cool
+
+本部分提供三个级别的控制 , 插件 , matcher , function
+
+对于插件级别的控制 , 通过 nonebot2 提供的跨插件方法导出属性 `coolen_time = seconds` 其中 `seconds` 为冷却时间(s)
+
+```py
+from nonebot.plugin import export
+_export = export()
+_export.coolen_time = 5 # 冷却时间为 5s
+```
+
+对于 matcher 级别的控制 , 导出函数 `coolen_matcher(times, matcher)`
+```py
+from nonebot.plugin import require
+_req = require("admin.nonebot_plugin_PCtrl")
+_cmd = _req.coolen_matcher(5, on_keyword({"jls", "jiangly"}, priority=10)) # 对一个 matcher 启用冷却
+```
+
+对于 function 级别的控制 , 通过跨插件方法导入插件提供的装饰器 `coolen_async(times)` 或者 `coolen_sync(times)`
+```py
+from nonebot.plugin import require
+_req = require("admin.nonebot_plugin_PCtrl")
+coolen_async = _req.coolen_async
+@coolen_async(5)
+async def _(*args, **kwargs): pass
+```
 
 ## 配置
 请添加到 nonebot2 配置文件中
@@ -53,9 +83,18 @@ db_link=
 ### 忽略管控
 
 对于不想被此插件管控的插件 , 请使用 nonebot2 提供的跨插件方法导出属性 `ignore_global_control = True`
+```py
+from nonebot.plugin import export
+_export = export()
+_export.ignore_global_control = True
+```
 
 ## 特别感谢
 
 [nonebot2](https://github.com/nonebot/nonebot2) : 优秀的跨平台 python 异步机器人框架
 
 [SQLAlchemy](https://www.sqlalchemy.org/) : 完善~~文档根本看不懂~~的 ORM
+
+## 部分更新
+
+`0.1.6` : 全局冷却功能完成
