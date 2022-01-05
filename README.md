@@ -1,4 +1,4 @@
-# nonebot_plugin_PCtrl
+# Plugins controller for nonebot2
 ## 简介
 
 基于 Hook 的插件管理器 , 提供常用的管理功能
@@ -13,6 +13,8 @@
 - [X] 全局ban人/群
 - [X] 全局冷却时间
 - [X] 冷却时间信息显示与命令修改
+
+> 欢迎 issue 提出更多需求
 
 ## 使用说明
 
@@ -86,7 +88,9 @@ async def _(*args, **kwargs): pass
 ```ini
 ##### Plugins Controller ######
 # 数据库配置(SQLAlchemy任意异步) ! 该选项会覆盖上述数据库配置
-## 数据库链接(请参考SQLAlchemy官方文档) url: https://docs.sqlalchemy.org/en/14/tutorial/engine.html#establishing-connectivity-the-engine
+## 数据库链接(请参考SQLAlchemy官方文档) 
+## url: https://docs.sqlalchemy.org/en/14/tutorial/engine.html#establishing-connectivity-the-engine
+## 下面是一个例子
 db_link=sqlite+aiosqlite:///_my_plugins.db
 # 冷却相关配置
 ## 是否启用全局 reply , 启用后 , 如果调用在冷却中的函数 , 会尝试向调用主体(人/群)发送剩余冷却时长
@@ -94,7 +98,7 @@ db_link=sqlite+aiosqlite:///_my_plugins.db
 coolen_time_reply=
 ```
 
-测试过的方言 , 使用前请安装相关依赖
+测试过的方言 , 使用前请安装相关依赖 
 1. `postgresql+asyncpg` 需要安装 `asyncpg`
 2. `sqlite+aiosqlite` 默认依赖
 ## 忽略管控
