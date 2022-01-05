@@ -12,7 +12,7 @@
 - [X] 全局插件开关
 - [X] 全局ban人/群
 - [X] 全局冷却时间
-- [ ] 冷却时间信息显示与命令修改
+- [X] 冷却时间信息显示与命令修改
 
 ## 使用说明
 
@@ -51,28 +51,47 @@ _export.coolen_time = 5 # 冷却时间为 5s
 对于 matcher 级别的控制 , 导出函数 `coolen_matcher(times, matcher)`
 ```py
 from nonebot.plugin import require
-_req = require("admin.nonebot_plugin_PCtrl")
+_req = require("nonebot_plugin_PCtrl")
 _cmd = _req.coolen_matcher(5, on_keyword({"jls", "jiangly"}, priority=10)) # 对一个 matcher 启用冷却
+@_cmd.handle()
+async def _(bot, event, state): pass
 ```
 
-对于 function 级别的控制 , 通过跨插件方法导入插件提供的装饰器 `coolen_async(times)`
+对于 function 级别的控制 , 通过跨插件方法导入插件提供的装饰器 `coolen_async(times, True/False)`
 ```py
 from nonebot.plugin import require
 _req = require("admin.nonebot_plugin_PCtrl")
 coolen_async = _req.coolen_async
+
+# handle,run_preprocessor,got 等有着固定参数名称要求的第二维请填 True
 @some_matcher.handle()
-@coolen_async(5)
+@coolen_async(5, True)
+async def _(bot, event, state): pass
+
+# 其余填 False
+@coolen_async(5, False)
 async def _(*args, **kwargs): pass
 ```
+
+对于插件级别的冷却控制还有一些指令
+
+`/listcool` 显示当前插件级别冷却配置
+
+`/setcool -p plugin_name -t times` 设置插件冷却时间
+
+> :warning: 通过当前命令设置的冷却时间会被插件配置覆盖(如果有)
 
 ## 配置
 请添加到 nonebot2 配置文件中
 ```ini
+##### Plugins Controller ######
 # 数据库配置(SQLAlchemy任意异步) ! 该选项会覆盖上述数据库配置
-## 数据库链接(请参考SQLAlchemy官方文档)
-## url: https://docs.sqlalchemy.org/en/14/tutorial/engine.html#establishing-connectivity-the-engine
-## 默认为 'sqlite+aiosqlite:///_my_plugins.db'
-db_link=
+## 数据库链接(请参考SQLAlchemy官方文档) url: https://docs.sqlalchemy.org/en/14/tutorial/engine.html#establishing-connectivity-the-engine
+db_link=sqlite+aiosqlite:///_my_plugins.db
+# 冷却相关配置
+## 是否启用全局 reply , 启用后 , 如果调用在冷却中的函数 , 会尝试向调用主体(人/群)发送剩余冷却时长
+## 为空则不启用 , 否则需要填一个大于 0 的数字 , 代表发送剩余冷却时长的冷却时长
+coolen_time_reply=
 ```
 
 测试过的方言 , 使用前请安装相关依赖
@@ -95,4 +114,5 @@ _export.ignore_global_control = True
 
 ## 部分更新
 
-`0.1.6` : 全局冷却功能完成
+- `0.1.6` : 全局冷却功能完成
+- `0.1.8` : 冷却时间信息显示与命令修改功能完成
