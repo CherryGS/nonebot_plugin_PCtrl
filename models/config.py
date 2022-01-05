@@ -7,7 +7,7 @@ class DBSettings(BaseSettings):
     db_name: str
     db_user: str
     db_passwd: str
-    db_link: str
+    db_link: str = "sqlite+aiosqlite:///_my_plugins.db"
     debug: bool
 
     class Config:

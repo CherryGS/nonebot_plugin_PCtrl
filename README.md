@@ -1,11 +1,18 @@
 # nonebot_plugin_PCtrl
 ## 简介
 
-基于 Hook 的插件管理器
+基于 Hook 的插件管理器 , 提供常用的管理功能
 
 使用 SQLAlchemy + asyncpg 实现持久化
 
 功能持续增加中
+
+## 计划
+
+- [X] 全局插件开关
+- [X] 全局ban人/群
+- [ ] 全局冷却时间
+
 ## 使用说明
 
 1. 本插件初始化于 `websocket` 连接时 , http协议上报未经测试
@@ -30,21 +37,16 @@
 ## 配置
 请添加到 nonebot2 配置文件中
 ```ini
-# 数据库配置(postgres+asyncpg)
-## 用户名
-db_user=
-## 密码
-db_passwd=
-## 数据库名
-db_name=
-## 数据库地址
-db_addr=
-
 # 数据库配置(SQLAlchemy任意异步) ! 该选项会覆盖上述数据库配置
 ## 数据库链接(请参考SQLAlchemy官方文档)
 ## url: https://docs.sqlalchemy.org/en/14/tutorial/engine.html#establishing-connectivity-the-engine
+## 默认为 'sqlite+aiosqlite:///_my_plugins.db'
 db_link=
 ```
+
+测试过的方言 , 使用前请安装相关依赖
+1. `postgresql+asyncpg` 需要安装 `asyncpg`
+2. `sqlite+aiosqlite` 默认依赖
 
 ## 侵入式管理部分
 

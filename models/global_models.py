@@ -17,10 +17,9 @@ class pluginsCfg(Base):
 class pluginsBan(Base):
     __tablename__ = "_admin_plugins_global_ban"
 
-    id: int = Column(BigInteger, primary_key=True)
-    ban_type: int = Column(BigInteger)
-    handle: int = Column(BigInteger)
-    plugin_name: int = Column(String)
+    ban_type: int = Column(BigInteger, primary_key=True)
+    handle: int = Column(BigInteger, primary_key=True)
+    plugin_name: str = Column(String, primary_key=True)
 
     __mapper_args__ = {"eager_defaults": True}
 

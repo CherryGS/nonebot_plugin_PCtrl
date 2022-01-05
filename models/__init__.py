@@ -14,9 +14,7 @@ ASession: sessionmaker = None
 
 _link = ""
 if not _conf.db_link:
-    _link = "postgresql+asyncpg://{}:{}@{}/{}".format(
-        _conf.db_user, _conf.db_passwd, _conf.db_addr, _conf.db_name
-    )
+    _link = "sqlite+aiosqlite:///_sqlite.db"
 else:
     _link = _conf.db_link
 
