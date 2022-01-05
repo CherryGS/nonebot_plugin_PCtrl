@@ -14,7 +14,7 @@ ASession: sessionmaker = None
 
 _link = ""
 if not _conf.db_link:
-    _link = "sqlite+aiosqlite:///_sqlite.db"
+    _link = "sqlite+aiosqlite:///_my_plugins.db"
 else:
     _link = _conf.db_link
 
