@@ -1,4 +1,3 @@
-from types import new_class
 from typing import List
 from nonebot import get_driver
 from nonebot.adapters.cqhttp import Bot

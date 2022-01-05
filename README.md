@@ -38,7 +38,7 @@
 
 ### global.cool
 
-本部分提供三个级别的控制 , 插件 , matcher , function
+本部分提供三个级别的控制 , plugin , matcher , function
 
 对于插件级别的控制 , 通过 nonebot2 提供的跨插件方法导出属性 `coolen_time = seconds` 其中 `seconds` 为冷却时间(s)
 
@@ -55,11 +55,12 @@ _req = require("admin.nonebot_plugin_PCtrl")
 _cmd = _req.coolen_matcher(5, on_keyword({"jls", "jiangly"}, priority=10)) # 对一个 matcher 启用冷却
 ```
 
-对于 function 级别的控制 , 通过跨插件方法导入插件提供的装饰器 `coolen_async(times)` 或者 `coolen_sync(times)`
+对于 function 级别的控制 , 通过跨插件方法导入插件提供的装饰器 `coolen_async(times)`
 ```py
 from nonebot.plugin import require
 _req = require("admin.nonebot_plugin_PCtrl")
 coolen_async = _req.coolen_async
+@some_matcher.handle()
 @coolen_async(5)
 async def _(*args, **kwargs): pass
 ```
@@ -77,10 +78,7 @@ db_link=
 测试过的方言 , 使用前请安装相关依赖
 1. `postgresql+asyncpg` 需要安装 `asyncpg`
 2. `sqlite+aiosqlite` 默认依赖
-
-## 侵入式管理部分
-
-### 忽略管控
+## 忽略管控
 
 对于不想被此插件管控的插件 , 请使用 nonebot2 提供的跨插件方法导出属性 `ignore_global_control = True`
 ```py

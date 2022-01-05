@@ -1,4 +1,5 @@
 import functools
+import inspect
 import time
 from typing import Dict, List
 
@@ -7,6 +8,7 @@ from nonebot.exception import IgnoredException
 from nonebot.log import logger
 from nonebot.matcher import Matcher
 from nonebot.message import run_preprocessor
+from nonebot.plugin import on_message
 from nonebot.typing import T_State
 from sqlalchemy import select
 
@@ -66,39 +68,33 @@ async def _(matcher: Matcher, bot: Bot, event: Event, state: T_State):
     raise IgnoredException("")
 
 
-# 通过装饰器实现函数级别的冷却
+# 通过装饰器实现handler级别的冷却
 def coolen_async(times: int):
     def decorater(func):
         lst = 0
+        res = inspect.signature(func)
 
         @functools.wraps(func)
-        async def wraps(*args, **kwargs):
+        async def wraps1(bot, event, state):
             nonlocal lst
             r = time.time()
             if r - lst >= times:
                 lst = r
-                return await func(*args, **kwargs)
+                return await func(bot, event, state)
             else:
-                logger.warning(" {} 冷却中...".format(func.__name__))
-
-        return wraps
-
-    return decorater
-
-
-def coolen_sync(times: int):
-    def decorater(func):
-        lst = 0
+                logger.warning(" {}.{} 冷却中...".format(func.__module__, func.__name__))
 
         @functools.wraps(func)
-        def wraps(*args, **kwargs):
+        async def wraps2(self, bot, event, state):
             nonlocal lst
             r = time.time()
             if r - lst >= times:
                 lst = r
-                return func(*args, **kwargs)
+                return await func(self, bot, event, state)
+            else:
+                logger.warning(" {}.{} 冷却中...".format(func.__module__, func.__name__))
 
-        return wraps
+        return wraps1 if "self" not in str(res) else wraps2
 
     return decorater
 
@@ -107,4 +103,3 @@ def coolen_sync(times: int):
 def coolen_matcher(times, matcher: Matcher):
     matcher.run = coolen_async(times)(matcher.run)
     return matcher
-
