@@ -105,6 +105,6 @@ def coolen_sync(times: int):
 
 # 通过装饰器 patch matcher 实例的 run 函数可以实现 matcher 级别的冷却
 def coolen_matcher(times, matcher: Matcher):
-    matcher.run = coolen_time_async(times)(matcher.run)
+    matcher.run = coolen_async(times)(matcher.run)
     return matcher
 
