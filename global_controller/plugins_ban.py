@@ -65,7 +65,7 @@ _parser.add_argument("-p")  # 插件名
 _cmd1 = on_shell_command("ban", parser=_parser, permission=SUPERUSER)
 
 
-async def _BanParser(matcher, args):
+async def _BanParser(matcher: Matcher, args, event: Event):
     if isinstance(args, Exception):
         await matcher.finish("参数填写错误 , 请检查")
 
@@ -73,7 +73,10 @@ async def _BanParser(matcher, args):
         await matcher.finish("个人和群只能选择一个")
 
     if not args.u and not args.g:
-        await matcher.finish("个人和群必须选择一个")
+        if not isinstance(event, GroupMessageEvent):
+            await matcher.finish("个人和群必须选择一个")
+        else:
+            args.g = event.group_id
 
     async with ASession() as session:
         stmt = select(pluginsCfg).where(pluginsCfg.plugin_name == args.p).limit(1)
@@ -98,7 +101,7 @@ async def _BanParser(matcher, args):
 @_cmd1.handle()
 async def _(bot: Bot, event: Event, state: T_State):
     # ban 人/群
-    ban_type, handle, name = await _BanParser(_cmd1, state["args"])
+    ban_type, handle, name = await _BanParser(_cmd1, state["args"], event)
     global _ban_settings
 
     session = ASession()
@@ -131,7 +134,7 @@ _cmd2 = on_shell_command("unban", parser=_parser, permission=SUPERUSER)
 @_cmd2.handle()
 async def _(bot: Bot, event: Event, state: T_State):
     # unban 人/群
-    ban_type, handle, name = await _BanParser(_cmd2, state["args"])
+    ban_type, handle, name = await _BanParser(_cmd2, state["args"], event)
 
     if await exists_rule(ban_type, handle, name):
         session = ASession()

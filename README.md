@@ -35,6 +35,7 @@
 - `/listban` 列出存在的 ban 的信息
 - `/ban -u handle -p plugin_name` ban 掉 QQ 号为 `handle` 的人使用名称为 `plugin_name` 插件的权限
 - `/ban -g handle -p plugin_name` ban 掉群号为 `handle` 的群使用名称为 `plugin_name` 插件的权限
+> 如果在群内执行 , 可以省略参数 `-g` , 会自动识别为该群
 - `/unban -u handle -p plugin_name` 取消 ban
 - `/unban -g handle -p plugin_name` 取消 ban
 
@@ -91,11 +92,15 @@ async def _(*args, **kwargs): pass
 ## 数据库链接(请参考SQLAlchemy官方文档) 
 ## url: https://docs.sqlalchemy.org/en/14/tutorial/engine.html#establishing-connectivity-the-engine
 ## 下面是一个例子
-db_link=sqlite+aiosqlite:///_my_plugins.db
+plugin_pctrl_db=sqlite+aiosqlite:///_my_admin.db
+## 如果真的想将该插件信息和其他插件共用库 , 请确保构造的是 SQLAlchemy 的异步的 AsyncEngine
+## 并且在该插件初始化前向全局设置传入 AsyncEngine , 设置 `get_driver().config.AEngine = your_AsyncEngine`
+## 需要注意的是 , 该设置优先于传入的 AsyncEngine
 # 冷却相关配置
 ## 是否启用全局 reply , 启用后 , 如果调用在冷却中的函数 , 会尝试向调用主体(人/群)发送剩余冷却时长
 ## 为空则不启用 , 否则需要填一个大于 0 的数字 , 代表发送剩余冷却时长的冷却时长
 coolen_time_reply=
+###############################
 ```
 
 测试过的方言 , 使用前请安装相关依赖 
