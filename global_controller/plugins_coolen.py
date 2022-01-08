@@ -38,7 +38,7 @@ def coolen_async(times: int, spcing: bool = True, reply: bool = _reply):
         async def _do(func, bot, event, reply, r):
             if reply:
                 await _reply_coolen_time(
-                    bot, event, func.__module__ + func.__name__, lst + times - r
+                    bot, event, func.__module__ + "." + func.__name__, lst + times - r
                 )
             logger.warning(" {}.{} 冷却中...".format(func.__module__, func.__name__))
 
@@ -102,8 +102,8 @@ def coolen_matcher(times, matcher: Matcher):
 
 async def is_exist(name) -> bool:
     stmt = select(pluginsCfg).where(pluginsCfg.plugin_name == name).limit(1)
+    session = ASession()
     try:
-        session = ASession()
         res = await session.execute(stmt)
         ok = bool(res.scalars().first())
     except:
@@ -116,7 +116,7 @@ async def is_exist(name) -> bool:
 @coolen_async(_reply_time, False)
 async def _reply_coolen_time(bot: Bot, event: Event, name: str, times: int):
     if not isinstance(event, MetaEvent):
-        await bot.send(event, "{} 冷却中 , 还剩 {} 秒".format(name, times))
+        await bot.send(event, "{} 冷却中 , 还剩 {} 秒".format(name, int(times)))
 
 
 @db_init_finished.add_hook
@@ -124,8 +124,8 @@ async def _load_coolen_time():
     """将插件冷却信息载入内存
     """
     global _coolen
+    session = ASession()
     try:
-        session = ASession()
         res: List[pluginsCfg] = (
             await session.execute(select(pluginsCfg))
         ).scalars().all()
