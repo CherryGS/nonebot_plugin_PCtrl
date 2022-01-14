@@ -1,15 +1,16 @@
+import asyncio
 from typing import List
+
 from nonebot import get_driver
-from nonebot.adapters.cqhttp import Bot
-from nonebot.adapters.cqhttp.event import Event, MetaEvent
+from nonebot.adapters.onebot.v11 import Bot, Event, MetaEvent
 from nonebot.exception import IgnoredException
 from nonebot.log import logger
 from nonebot.message import event_preprocessor
-from nonebot.plugin import export, plugins
+from nonebot.plugin import export
+from nonebot.plugin.plugin import plugins
 from nonebot.typing import T_State
 from sqlalchemy import select
 from sqlalchemy.sql.expression import update
-import asyncio
 
 from .hook import db_init_finished
 from .models import ASession
@@ -43,8 +44,8 @@ async def _(bot: Bot, event: Event, state: T_State):
 async def init_plugins(session, now_plugins):
 
     db_plugins: List[pluginsCfg] = (
-        await session.execute(select(pluginsCfg))
-    ).scalars().all()
+        (await session.execute(select(pluginsCfg))).scalars().all()
+    )
 
     num = len(db_plugins)
 
@@ -86,8 +87,8 @@ async def init_db():
     for i in plugins.items():
         if not i[1].export.ignore_global_control:
             now_plugins[i[0]] = i[1]
+    session = ASession()
     try:
-        session = ASession()
         num = await init_plugins(session, now_plugins)
         await update_coolen_time(session, now_plugins)
         await session.commit()
@@ -99,7 +100,7 @@ async def init_db():
 
 
 @_driver.on_bot_connect
-async def _(bot: Bot = None):
+async def _(bot):
     global _is_init
     if not _is_init:
         try:
@@ -111,6 +112,7 @@ async def _(bot: Bot = None):
 
 
 from .global_controller import *
+
 
 # temp
 @event_preprocessor

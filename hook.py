@@ -4,9 +4,9 @@ from nonebot.log import logger
 
 
 class Hook(object):
-    _hooked_func: Set[Callable[..., Any]] = set()
+    _hooked_func: Set[Callable[..., Any]]
 
-    def add_hook(self, func):
+    def add_hook(self, func: Callable[..., Any]) -> Callable[..., Any]:
         self._hooked_func.add(func)
         return func
 

@@ -1,7 +1,4 @@
-from nonebot.adapters.cqhttp.bot import Bot
-from nonebot.adapters.cqhttp.event import Event
-from nonebot.plugin import on_message, export
-from nonebot.typing import T_State
+from nonebot.plugin import export
 
 from .plugins_ban import *
 from .plugins_switch import *
