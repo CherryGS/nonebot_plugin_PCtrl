@@ -12,18 +12,18 @@ from nonebot.typing import T_State
 from sqlalchemy import select
 
 from ..models import ASession
-from ..models.global_models import pluginsCfg
+from ..models.global_models import PluginsCfg
 
 
 async def is_start(name) -> bool:
     stmt = (
-        select(pluginsCfg)
-        .where(pluginsCfg.plugin_name == name)
-        .where(pluginsCfg.is_start == True)
+        select(PluginsCfg)
+        .where(PluginsCfg.plugin_name == name)
+        .where(PluginsCfg.is_start == True)
         .limit(1)
     )
+    session = ASession()
     try:
-        session = ASession()
         if await is_exist(name):
             res = await session.execute(stmt)
             ok = bool(res.scalars().first())
@@ -37,9 +37,9 @@ async def is_start(name) -> bool:
 
 
 async def is_exist(name) -> bool:
-    stmt = select(pluginsCfg).where(pluginsCfg.plugin_name == name).limit(1)
+    stmt = select(PluginsCfg).where(PluginsCfg.plugin_name == name).limit(1)
+    session = ASession()
     try:
-        session = ASession()
         res = await session.execute(stmt)
         ok = bool(res.scalars().first())
     except:
@@ -70,9 +70,9 @@ async def _(bot: Bot, event: Event, state: T_State):
     tx = ""
     try:
         session = ASession()
-        res: List[pluginsCfg] = (
-            await session.execute(select(pluginsCfg))
-        ).scalars().all()
+        res: List[PluginsCfg] = (
+            (await session.execute(select(PluginsCfg))).scalars().all()
+        )
         if res:
             for i in res:
                 tx += "插件名: {}  启用状态: {} \n".format(i.plugin_name, i.is_start)
@@ -105,7 +105,7 @@ async def _(bot: Bot, event: Event, state: T_State):
 
     session = ASession()
 
-    stmt = select(pluginsCfg).where(pluginsCfg.plugin_name == name).limit(1)
+    stmt = select(PluginsCfg).where(PluginsCfg.plugin_name == name).limit(1)
     try:
         res = (await session.execute(stmt)).scalars().first()
         res.is_start ^= True

@@ -1,9 +1,9 @@
-from nonebot.plugin import export
+from nonebot.plugin import export, require, Export
 
 from .plugins_ban import *
-from .plugins_switch import *
 from .plugins_coolen import *
+from .plugins_switch import *
 
-_export = export()
-_export.coolen_async = coolen_async
-_export.coolen_matcher = coolen_matcher
+export = export()
+
+__all__ = []

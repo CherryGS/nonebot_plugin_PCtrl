@@ -1,6 +1,7 @@
-from typing import List
-from nonebot.adapters.cqhttp import Bot, Event
-from nonebot.adapters.cqhttp.event import GroupMessageEvent
+from typing import List, Type
+
+
+from nonebot.adapters.onebot.v11 import Bot, Event, GroupMessageEvent, MessageEvent
 from nonebot.exception import IgnoredException
 from nonebot.log import logger
 from nonebot.matcher import Matcher
@@ -14,58 +15,41 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql.expression import delete
 
 from ..models import ASession
-from ..models.global_models import pluginsBan, pluginsCfg
+from ..models.global_models import PluginsBan, PluginsCfg
+from .core import *
 
-
-# -----------------------------------------------------------------------------
-
-
-async def exists_rule(ban_type, handle, plugin_name):
-    stmt = (
-        select(pluginsBan)
-        .where(pluginsBan.ban_type == ban_type)
-        .where(pluginsBan.handle == handle)
-        .where(pluginsBan.plugin_name == plugin_name)
-        .limit(1)
-    )
-    try:
-        session = ASession()
-        res = await session.execute(stmt)
-        return bool(res.scalars().first())
-    except:
-        raise
-    finally:
-        await session.close()
+__all__ = []
 
 
 @run_preprocessor
-async def _(matcher: Matcher, bot: Bot, event: Event, state: T_State):
+async def _(matcher: Matcher, bot: Bot, event: MessageEvent, state: T_State):
     # ignore掉全局被ban的人/群的matcher
     logger.debug("--- ban ---")
     handle_qq = int(event.user_id)
     name = matcher.plugin_name
-    if await exists_rule(0, handle_qq, name):
+    if not name:
+        return
+
+    if await check_plugin_ban(0, handle_qq, name):
         logger.warning("QQ号:{}被全局ban".format(handle_qq))
         raise IgnoredException("")
 
     if isinstance(event, GroupMessageEvent):
         handle_gr = event.group_id
-        if await exists_rule(1, handle_gr, name):
+        if await check_plugin_ban(1, handle_gr, name):
             logger.warning("群号:{}被全局ban".format(handle_gr))
             raise IgnoredException("")
 
 
-# -----------------------------------------------------------------------------
+parser = ArgumentParser()
+parser.add_argument("-u")  # 个人 qq 号
+parser.add_argument("-g")  # 群号
+parser.add_argument("-p")  # 插件名
 
-_parser = ArgumentParser()
-_parser.add_argument("-u")  # 个人 qq 号
-_parser.add_argument("-g")  # 群号
-_parser.add_argument("-p")  # 插件名
-
-_cmd1 = on_shell_command("ban", parser=_parser, permission=SUPERUSER)
+cmd1 = on_shell_command("ban", parser=parser, permission=SUPERUSER)
 
 
-async def _BanParser(matcher: Matcher, args, event: Event):
+async def _BanParser(matcher: Type[Matcher], args, event: Event):
     if isinstance(args, Exception):
         await matcher.finish("参数填写错误 , 请检查")
 
@@ -78,10 +62,7 @@ async def _BanParser(matcher: Matcher, args, event: Event):
         else:
             args.g = event.group_id
 
-    async with ASession() as session:
-        stmt = select(pluginsCfg).where(pluginsCfg.plugin_name == args.p).limit(1)
-        res = await session.execute(stmt)
-        if not res.first():
+        if not await check_plugin_exist(args.p):
             await matcher.finish("参数错误 , |{}| 不在插件列表中".format(args.p))
 
     ban_type = 0
@@ -98,78 +79,49 @@ async def _BanParser(matcher: Matcher, args, event: Event):
     return ban_type, handle, name
 
 
-@_cmd1.handle()
+@cmd1.handle()
 async def _(bot: Bot, event: Event, state: T_State):
     # ban 人/群
-    ban_type, handle, name = await _BanParser(_cmd1, state["args"], event)
+    ban_type, handle, name = await _BanParser(cmd1, state["args"], event)
     global _ban_settings
 
-    session = ASession()
-    stmt = (
-        select(pluginsBan)
-        .where(pluginsBan.ban_type == ban_type)
-        .where(pluginsBan.handle == handle)
-        .where(pluginsBan.plugin_name == name)
-        .limit(1)
-    )
     try:
-        res = (await session.execute(stmt)).scalars().first()
-        now = pluginsBan(ban_type=ban_type, handle=handle, plugin_name=name)
-        if res:
-            res = now
-        else:
-            session.add(now)
-        await session.commit()
-        await _cmd1.finish("ban执行成功")
+        await set_plugin_ban(ban_type, handle, name)
+        await cmd1.finish("ban执行成功")
     except SQLAlchemyError as e:
-        await _cmd1.send("向数据库中添加ban时出现异常\n 异常信息 : \n {}".format(e))
+        await cmd1.send("向数据库中添加ban时出现异常\n 异常信息 : \n {}".format(e))
         raise e
-    finally:
-        await session.close()
 
 
-_cmd2 = on_shell_command("unban", parser=_parser, permission=SUPERUSER)
+cmd2 = on_shell_command("unban", parser=parser, permission=SUPERUSER)
 
 
-@_cmd2.handle()
+@cmd2.handle()
 async def _(bot: Bot, event: Event, state: T_State):
     # unban 人/群
-    ban_type, handle, name = await _BanParser(_cmd2, state["args"], event)
+    ban_type, handle, name = await _BanParser(cmd2, state["args"], event)
 
-    if await exists_rule(ban_type, handle, name):
-        session = ASession()
+    if await check_plugin_ban(ban_type, handle, name):
         try:
-            stmt = delete(pluginsBan).where(
-                pluginsBan.ban_type == ban_type,
-                pluginsBan.handle == handle,
-                pluginsBan.plugin_name == name,
-            )
-            await session.execute(stmt)
-            await session.commit()
-            await _cmd2.finish("unban执行成功")
-        except SQLAlchemyError as e:
-            await _cmd1.send("unban时出现异常\n 异常信息 : \n {}".format(e))
+            await del_plugin_ban(ban_type, handle, name)
+            await cmd2.finish("unban执行成功")
+        except Exception as e:
+            await cmd1.send("unban时出现异常\n 异常信息 : \n {}".format(e))
             raise
-        finally:
-            await session.close()
     else:
-        await _cmd2.finish("该人/群未被ban插件 |{}|".format(name))
+        await cmd2.finish("该人/群未被ban插件 |{}|".format(name))
 
 
-# -----------------------------------------------------------------------------
-
-_cmd3 = on_command("listban", permission=SUPERUSER)
+cmd3 = on_command("listban", permission=SUPERUSER)
 
 
-@_cmd3.handle()
+@cmd3.handle()
 async def _(bot: Bot, event: Event, state: T_State):
     global _ban_settings
     msg = ""
+    session = ASession()
     try:
-        session = ASession()
-        res: List[pluginsBan] = (
-            await session.execute(select(pluginsBan))
-        ).scalars().all()
+        res = await list_plugin_ban()
         if res:
             for i in res:
                 msg += (
@@ -182,8 +134,8 @@ async def _(bot: Bot, event: Event, state: T_State):
         else:
             msg = "空"
     except Exception as e:
-        await _cmd3.send(str(e))
+        await cmd3.send(str(e))
         raise
     finally:
         await session.close()
-    await _cmd3.finish(msg)
+    await cmd3.finish(msg)

@@ -1,11 +1,9 @@
 import functools
 import inspect
 import time
-from typing import Dict, List
+from typing import Any, Callable, Dict, List
 
 from nonebot import get_driver
-from nonebot.adapters.cqhttp import Bot, Event
-from nonebot.adapters.cqhttp.event import MetaEvent
 from nonebot.exception import IgnoredException
 from nonebot.log import logger
 from nonebot.matcher import Matcher
@@ -15,11 +13,10 @@ from nonebot.plugin import on_command, on_shell_command
 from nonebot.rule import ArgumentParser
 from nonebot.typing import T_State
 from sqlalchemy import select
-from sqlalchemy.sql.expression import update
 
-from ..hook import db_init_finished
+from .. import post_db_init
 from ..models import ASession
-from ..models.global_models import pluginsCfg
+from ..models.global_models import PluginsCfg
 from .config import CoolenConf
 
 _coolen_configs: Dict[str, int] = dict()  # 插件冷却设置
@@ -30,66 +27,20 @@ _reply = _conf.coolen_time_reply != None
 _reply_time = _conf.coolen_time_reply if _reply else 0
 
 # 通过装饰器实现handler级别的冷却
-def coolen_async(times: int, spcing: bool = True, reply: bool = _reply):
-    def decorater(func):
+def coolen_async(times: int):
+    def decorater(func: Callable[..., Any]):
         lst = 0
         res = inspect.signature(func)
 
-        async def _do(func, bot, event, reply, r):
-            if reply:
-                await _reply_coolen_time(
-                    bot, event, func.__module__ + "." + func.__name__, lst + times - r
-                )
-            logger.warning(" {}.{} 冷却中...".format(func.__module__, func.__name__))
-
         @functools.wraps(func)
-        async def wraps(*args, **kwargs):
+        async def wraps(*args: Any, **kwargs: Any):
             nonlocal lst
             r = time.time()
             if r - lst >= times:
                 lst = r
-                await func(*args, **kwargs)
-            else:
-                logger.warning(" {}.{} 冷却中...".format(func.__module__, func.__name__))
+                return await func(*args, **kwargs)
 
-        if not spcing:
-            return wraps
-
-        @functools.wraps(func)
-        async def wraps1(self, bot, event, state):
-            nonlocal lst
-            r = time.time()
-            if r - lst >= times:
-                lst = r
-                await func(self, bot, event, state)
-            else:
-                await _do(func, bot, event, reply, r)
-
-        @functools.wraps(func)
-        async def wraps2(matcher, bot, event, state):
-            nonlocal lst
-            r = time.time()
-            if r - lst >= times:
-                lst = r
-                await func(matcher, bot, event, state)
-            else:
-                await _do(func, bot, event, reply, r)
-
-        @functools.wraps(func)
-        async def wraps3(bot, event, state):
-            nonlocal lst
-            r = time.time()
-            if r - lst >= times:
-                lst = r
-                await func(bot, event, state)
-            else:
-                await _do(func, bot, event, reply, r)
-
-        return (
-            wraps1
-            if "self" in str(res)
-            else (wraps2 if "matcher" in str(res) else wraps3)
-        )
+        return wraps
 
     return decorater
 
@@ -101,7 +52,7 @@ def coolen_matcher(times, matcher: Matcher):
 
 
 async def is_exist(name) -> bool:
-    stmt = select(pluginsCfg).where(pluginsCfg.plugin_name == name).limit(1)
+    stmt = select(PluginsCfg).where(PluginsCfg.plugin_name == name).limit(1)
     session = ASession()
     try:
         res = await session.execute(stmt)
@@ -113,22 +64,15 @@ async def is_exist(name) -> bool:
     return ok
 
 
-@coolen_async(_reply_time, False)
-async def _reply_coolen_time(bot: Bot, event: Event, name: str, times: int):
-    if not isinstance(event, MetaEvent):
-        await bot.send(event, "{} 冷却中 , 还剩 {} 秒".format(name, int(times)))
-
-
-@db_init_finished.add_hook
+@post_db_init.add_hook
 async def _load_coolen_time():
-    """将插件冷却信息载入内存
-    """
+    """将插件冷却信息载入内存"""
     global _coolen
     session = ASession()
     try:
-        res: List[pluginsCfg] = (
-            await session.execute(select(pluginsCfg))
-        ).scalars().all()
+        res: List[PluginsCfg] = (
+            (await session.execute(select(PluginsCfg))).scalars().all()
+        )
         for i in res:
             _coolen_configs[i.plugin_name] = i.coolen_time
         logger.success("插件全局冷却初始化成功")
@@ -205,10 +149,10 @@ async def _(bot: Bot, event: Event, state: T_State):
     except ValueError:
         await _cmd2.finish("-t 参数未跟数字 , 请重新输入")
 
-    stmt = select(pluginsCfg).where(pluginsCfg.plugin_name == name).limit(1)
+    stmt = select(PluginsCfg).where(PluginsCfg.plugin_name == name).limit(1)
     try:
         session = ASession()
-        res: pluginsCfg = (await session.execute(stmt)).scalars().first()
+        res: PluginsCfg = (await session.execute(stmt)).scalars().first()
         res.coolen_time = times
         await session.commit()
     except:

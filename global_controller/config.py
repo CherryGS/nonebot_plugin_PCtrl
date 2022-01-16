@@ -1,5 +1,4 @@
-from pydantic import BaseSettings, validator
-from pydantic.typing import NoneType
+from pydantic import BaseSettings
 
 
 class CoolenConf(BaseSettings):
