@@ -3,7 +3,7 @@ from typing import Any, List
 from sqlalchemy.sql.expression import select, delete
 from sqlalchemy import func
 
-from ...models import ASession, PluginsBan, PyPluginsBan
+from ..models import ASession, PluginsBan, PyPluginsBan
 
 
 async def get_plugin_ban(
@@ -40,10 +40,11 @@ async def get_plugin_ban(
         await session.close()
 
 
-async def check_plugin_ban(ban_type: int, handle: int, name: str) -> bool:
+async def check_plugin_ban(space: int, ban_type: int, handle: int, name: str) -> bool:
     session = ASession()
     stmt = (
         select(PluginsBan)
+        .where(PluginsBan.space == space)
         .where(PluginsBan.ban_type == ban_type)
         .where(PluginsBan.handle == handle)
         .where(PluginsBan.plugin_name == name)
@@ -59,7 +60,9 @@ async def check_plugin_ban(ban_type: int, handle: int, name: str) -> bool:
         await session.close()
 
 
-async def set_plugin_ban(ban_type: int, handle: int, name: str, **kwargs: Any):
+async def set_plugin_ban(
+    space: int, ban_type: int, handle: int, name: str, **kwargs: Any
+):
     """
     设置 ban , 重复则覆盖
 
@@ -69,7 +72,9 @@ async def set_plugin_ban(ban_type: int, handle: int, name: str, **kwargs: Any):
         `name` : 插件名称
     """
     session = ASession()
-    data = PyPluginsBan(ban_type=ban_type, handle=handle, plugin_name=name, **kwargs)
+    data = PyPluginsBan(
+        space=space, ban_type=ban_type, handle=handle, plugin_name=name, **kwargs
+    )
     obj = PluginsBan(**data.dict())
 
     try:
@@ -94,10 +99,11 @@ async def list_plugin_ban() -> List[PyPluginsBan]:
         await session.close()
 
 
-async def del_plugin_ban(ban_type: int, handle: int, name: str):
+async def del_plugin_ban(space: int, ban_type: int, handle: int, name: str):
     session = ASession()
     stmt = (
         delete(PluginsBan)
+        .where(PluginsBan.space == space)
         .where(PluginsBan.ban_type == ban_type)
         .where(PluginsBan.handle == handle)
         .where(PluginsBan.plugin_name == name)

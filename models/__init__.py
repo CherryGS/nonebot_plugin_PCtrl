@@ -1,4 +1,4 @@
-from anyutils import RegEngine as reg
+from anyutils import reg
 from nonebot import get_driver
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
@@ -16,14 +16,14 @@ AEngine = reg.get(__name__)
 
 ASession = sessionmaker(AEngine, expire_on_commit=False, class_=AsyncSession)
 
-from .global_models import (
+from .plugin_models import (
     PluginsBan,
     PluginsCfg,
-    PluginsCooling,
     PyPluginsCfg,
     PyPluginsBan,
-    PyPluginsCooling,
 )
+
+from .user_models import UserPerm, PyUserPerm
 
 
 @driver.on_startup

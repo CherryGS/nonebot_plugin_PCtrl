@@ -1,6 +1,5 @@
 from typing import List, Type
 
-
 from nonebot.adapters.onebot.v11 import Bot, Event, GroupMessageEvent, MessageEvent
 from nonebot.exception import IgnoredException
 from nonebot.log import logger
@@ -14,8 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql.expression import delete
 
-from ..models import ASession
-from ..models.global_models import PluginsBan, PluginsCfg
+from ..models import ASession, PluginsBan, PluginsCfg
 from .core import *
 
 __all__ = []

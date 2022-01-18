@@ -16,7 +16,7 @@ from sqlalchemy import select
 
 from .. import post_db_init
 from ..models import ASession
-from ..models.global_models import PluginsCfg
+from ..models.plugin_models import PluginsCfg
 from .config import CoolenConf
 
 _coolen_configs: Dict[str, int] = dict()  # 插件冷却设置

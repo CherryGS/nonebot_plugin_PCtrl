@@ -15,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.sql.expression import update
 
 from .models import ASession
-from .models.global_models import PluginsCfg
+from .models.plugin_models import PluginsCfg
 
 
 driver = get_driver()
@@ -104,7 +104,7 @@ async def _(bot):
             raise
 
 
-# from .global_controller import *
+from .plugin import *
 
 
 # temp

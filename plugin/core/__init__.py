@@ -5,4 +5,5 @@ from .ban import (
     list_plugin_ban,
     set_plugin_ban,
 )
-from .cfg import check_plugin_exist, get_plugin_cfg
+from .cfg import get_plugins_cfg
+from .permission import get_perms

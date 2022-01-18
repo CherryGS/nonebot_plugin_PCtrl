@@ -12,7 +12,7 @@ from nonebot.typing import T_State
 from sqlalchemy import select
 
 from ..models import ASession
-from ..models.global_models import PluginsCfg
+from ..models.plugin_models import PluginsCfg
 
 
 async def is_start(name) -> bool:
