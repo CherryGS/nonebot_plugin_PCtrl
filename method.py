@@ -17,10 +17,13 @@ async def del_left_plugin(names: set[str]):
         await del_plugin_cfg()
 
 
-async def init_plugins(data: set[PyPluginsCfg]):
-    names = {i.plugin_name for i in data}
-    await del_left_plugin(names)
-    await ins_plugins_cfg_update([i.dict() for i in data])
+async def init_plugins(data: set[PyPluginsCfg], upd: bool = True):
+    if not data:
+        return
+    if upd:
+        await ins_plugins_cfg_update([i.dict() for i in data])
+    else:
+        await ins_plugins_cfg_ignore([i.dict() for i in data])
 
 
 async def load_config() -> Dict[str, PluginCfg]:

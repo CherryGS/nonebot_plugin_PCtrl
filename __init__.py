@@ -28,7 +28,7 @@ post_db_init = HookMaker("数据库初始化后")
 async def _(bot: Bot, event: Event, state: T_State = State()):
     """忽略掉初始化完成之前的事件"""
     global is_init
-    if not is_init:
+    if not is_init and not isinstance(event, MetaEvent):
         logger.warning("插件数据库初始化未完成 , 事件 {} 被忽略".format(event))
         raise IgnoredException("")
 
@@ -36,28 +36,35 @@ async def _(bot: Bot, event: Event, state: T_State = State()):
 async def init_db():
     """初始化插件信息"""
     cfg = await load_config()
-    now = dict()
+    now1 = dict()
+    now2 = dict()
     for i in plugins.keys():
         if i not in cfg:
-            now[i] = PluginCfg()
-        if cfg[i].ignore_global_control == False:
-            now[i] = cfg[i]
-    for i in now.keys():
-        now[i] = PyPluginsCfg(**now[i].dict())
-    await init_plugins(set(now))
-    logger.success("插件信息初始化成功 , 初始化了 {} 个插件".format(len(now)))
+            now2[i] = PluginCfg()
+        elif cfg[i].ignore_global_control == False:
+            now1[i] = cfg[i]
+
+    await del_left_plugin(set(now1.keys()) | set(now2.keys()))
+
+    for i in now1.keys():
+        now1[i] = PyPluginsCfg(**now1[i].dict(), plugin_name=i)
+    for i in now2.keys():
+        now2[i] = PyPluginsCfg(**now2[i].dict(), plugin_name=i)
+    await init_plugins(set(now1.values()))
+    await init_plugins(set(now2.values()), False)
+    logger.success(
+        "插件信息初始化成功 , 初始化了 {} 个插件".format(len(now1.values()) + len(now2.values()))
+    )
 
 
 @driver.on_bot_connect
 async def _(bot):
     global is_init
     if not is_init:
-        try:
-            await init_db()
-            await post_db_init.run_hook()
-            is_init = True
-        except:
-            raise
+        await init_db()
+        await post_db_init.run_hook()
+        is_init = True
+        await clean_perms()
 
 
 from .plugin import *

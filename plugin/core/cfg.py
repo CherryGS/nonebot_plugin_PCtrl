@@ -6,9 +6,9 @@ from anyutils import anywhere
 
 from ...models import ASession, PluginsCfg, PyPluginsCfg, flag
 
-if flag is "sqlite":
+if flag == "sqlite":
     from sqlalchemy.dialects.sqlite import insert as ins
-elif flag is "postgresql":
+elif flag == "postgresql":
     from sqlalchemy.dialects.postgresql import insert as ins
 
 
@@ -17,11 +17,9 @@ async def get_plugins_cfg(
 ) -> List[PyPluginsCfg] | None:
     session = ASession()
     stmt = select(PluginsCfg.__table__)
-
-    if space is not None:
-        stmt = stmt.where(PluginsCfg.space == space)
-    if name is not None:
-        stmt = stmt.where(PluginsCfg.plugin_name == name)
+    stmt = await anywhere(
+        stmt, ((PluginsCfg.space, space), (PluginsCfg.plugin_name, name))
+    )
 
     async with ASession() as session:
         res: List[NamedTuple] = (await session.execute(stmt)).all()

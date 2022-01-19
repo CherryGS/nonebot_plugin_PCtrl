@@ -6,22 +6,24 @@ from ..core import *
 
 async def set_ban(space: int, handle: int, name: str):
     await ins_perm_ignore(
-        [
-            PyUserPerm(
-                space=space, handle=handle, plugin_name=name, perm_type=default_perm
-            ).dict()
-        ]
+        PyUserPerm(
+            space=space,
+            handle=handle,
+            plugin_name=name,
+            perm_type=default_perm,
+        ).dict()
     )
     await upd_perm(space, handle, name, my.ban.lv, True)
 
 
 async def del_ban(space: int, handle: int, name: str):
     await ins_perm_ignore(
-        [
-            PyUserPerm(
-                space=space, handle=handle, plugin_name=name, perm_type=default_perm
-            ).dict()
-        ]
+        PyUserPerm(
+            space=space,
+            handle=handle,
+            plugin_name=name,
+            perm_type=default_perm,
+        ).dict()
     )
     await upd_perm(space, handle, name, my.ban.lv, False)
 
@@ -38,6 +40,6 @@ async def get_all_ban(
         return None
     lis = []
     for i in res:
-        if (i.perm_type | (1 << my.ban.lv)) == expect:
+        if (i.perm_type & (1 << my.ban.lv)) == expect:
             lis.append(i)
     return lis

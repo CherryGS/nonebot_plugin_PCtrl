@@ -26,15 +26,15 @@ class PyPluginsCfg(BaseModel):
     plugin_name: str
     is_start: bool
     coolen_time: int
-    latest_time: int
+    latest_time: int = 0
 
-    __primary_key__ = ["space", "plugin_name"]
+    __primary_key__ = {"space", "plugin_name"}
 
     def __hash__(self):
-        return hash(tuple(self.__primary_key__))
+        return hash(tuple(self.dict(include=self.__primary_key__).values()))
 
     def __eq__(self, other):
-        return set(self.__primary_key__) == set(other.__primary_key)
+        return self.dict(include=self.__primary_key__).values() == other.dict(include=other.__primary_key__).values()
 
     @classmethod
     def make_value(cls, stmt, spec: str | None = None) -> Dict:

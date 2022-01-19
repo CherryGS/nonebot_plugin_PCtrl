@@ -21,35 +21,39 @@ driver = get_driver()
 @driver.on_bot_connect
 async def _(bot1):
     global bot
-    bot = bot1
+    bot = get_bot()
 
 
 class SenderFactory:
     group_id = conf.reply_id
 
-    def __init__(self, ignore: Tuple[Type[Exception], ...]) -> None:
+    def __init__(self, ignore: Tuple[Type[Exception], ...] = ()) -> None:
         self.ign = ignore
 
     async def _send(self, msg: str):
         await bot.call_api(
-            "/send_group_msg",
+            "send_group_msg",
             group_id=self.group_id,
             message=str(msg),
         )
 
-    def when_raise(self, func):
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            try:
-                r = await func(*args, **kwargs)
-                return r
-            except self.ign:
-                pass
-            except Exception as e:
-                await self._send(str(e))
-                raise
+    def when_raise(self, log: str | None = None):
+        def decorater(func):
+            @wraps(func)
+            async def wrapper(*args, **kwargs):
+                try:
+                    r = await func(*args, **kwargs)
+                    return r
+                except self.ign:
+                    raise
+                except Exception as e:
+                    msg = log if log is not None else str(type(e)) + str(e)
+                    await self._send(msg)
+                    raise
 
-        return wrapper
+            return wrapper
+
+        return decorater
 
     def when_func_call(self, log: str | None = None):
         def decorater(func):
@@ -59,7 +63,11 @@ class SenderFactory:
 
             @wraps(func)
             async def wrapper(*args, **kwargs):
-                msg = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + str(log)
+                msg = (
+                    time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+                    + " "
+                    + str(log)
+                )
                 await self._send(msg)
                 return await func(*args, **kwargs)
 
@@ -76,5 +84,6 @@ sender = SenderFactory(
         RejectedException,
         PausedException,
         StopPropagation,
+        FinishedException,
     )
 )

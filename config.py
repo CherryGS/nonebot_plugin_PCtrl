@@ -11,7 +11,7 @@ class CtrlCfg(BaseSettings):
     reply_id: int  # 报告信息的群聊号码
     bot_name: str | List[str] = "小小"
     debug: bool = False
-    plugin_cfg_file: str = "securet.json"  # 使用json格式
+    plugin_cfg_file: str = "secure.json"  # 使用json格式
 
     # 数据库配置
     db_link: str = "sqlite+aiosqlite:///admin.sqlite"
@@ -38,7 +38,7 @@ class PluginCfg(BaseSettings):
     ignore_global_control: bool = False
     space: int = 0  # 该插件作用命名空间(默认为全局,其他值为群聊号码)
     is_start: bool = True
-    cool_time: int = 0
+    coolen_time: int = 0
 
     class Config:
         extra = "ignore"

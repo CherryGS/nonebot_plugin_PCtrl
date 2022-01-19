@@ -9,6 +9,7 @@ from .cfg import (
 from .permission import (
     PyPluginsCfg,
     PyUserPerm,
+    del_perms,
     get_perms,
     ins_perm_ignore,
     ins_perm_update,

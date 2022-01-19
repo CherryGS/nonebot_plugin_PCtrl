@@ -1,13 +1,14 @@
 from typing import List, Literal, NamedTuple
 
-from sqlalchemy import delete, insert, select, update
+from sqlalchemy import delete, insert, select, update, or_, and_
 from sqlalchemy.exc import IntegrityError
-
+from sqlalchemy.sql import operators
 from ...models import ASession, PluginsCfg, PyPluginsCfg, PyUserPerm, UserPerm, flag
+from anyutils import anywhere
 
-if flag is "sqlite":
+if flag == "sqlite":
     from sqlalchemy.dialects.sqlite import insert as ins
-elif flag is "postgresql":
+elif flag == "postgresql":
     from sqlalchemy.dialects.postgresql import insert as ins
 
 
@@ -23,13 +24,15 @@ async def ins_perm_update(data: list):
         await session.commit()
 
 
-async def ins_perm_ignore(data: list):
+async def ins_perm_ignore(data):
     stmt = ins(UserPerm.__table__)  # type: ignore
     stmt = stmt.on_conflict_do_nothing()
 
-    async with ASession() as session:
-        await session.execute(stmt, data)
-        await session.commit()
+    # async with ASession() as session:
+    session = ASession()
+    await session.execute(stmt, data)
+    await session.commit()
+    await session.close()
 
 
 async def upd_perm(space: int, handle: int, name: str, perm: int, val: bool):
@@ -40,13 +43,14 @@ async def upd_perm(space: int, handle: int, name: str, perm: int, val: bool):
         .where(UserPerm.handle == handle)
     )
     if val:
-        stmt = stmt.values(perm_type=UserPerm.perm_type | (1 << perm))
+        stmt = stmt.values(perm_type=operators.op(UserPerm.perm_type, "|", (1 << perm)))  # type: ignore
     else:
-        stmt = stmt.values(perm_type=UserPerm.perm_type & (~(1 << perm)))
-
-    async with ASession() as session:
-        await session.execute(stmt)
-        await session.commit()
+        stmt = stmt.values(perm_type=operators.op(UserPerm.perm_type, "&", ~(1 << perm)))  # type: ignore
+    # async with ASession() as session:
+    session = ASession()
+    await session.execute(stmt)
+    await session.commit()
+    await session.close()
 
 
 async def ups_perm(**kw):
@@ -64,14 +68,37 @@ async def get_perms(
     session = ASession()
     stmt = select(UserPerm.__table__)
 
-    if space is not None:
-        stmt = stmt.where(UserPerm.space == space)
-    if handle is not None:
-        stmt = stmt.where(UserPerm.handle == handle)
-    if name is not None:
-        stmt = stmt.where(UserPerm.plugin_name == name)
-
+    stmt = await anywhere(
+        stmt,
+        (
+            (UserPerm.space, space),
+            (UserPerm.handle, handle),
+            (UserPerm.plugin_name, name),
+        ),
+    )
     async with ASession() as session:
         res: List[NamedTuple] = (await session.execute(stmt)).all()
         if res:
             return [PyUserPerm.construct(**i._asdict()) for i in res]
+
+
+async def del_perms(
+    space: int | None = None,
+    handle: int | None = None,
+    name: str | None = None,
+    perm: int | None = None,
+):
+    stmt = delete(UserPerm.__table__)
+    stmt = await anywhere(
+        stmt,
+        (
+            (UserPerm.space, space),
+            (UserPerm.handle, handle),
+            (UserPerm.plugin_name, name),
+            (UserPerm.perm_type, perm),
+        ),
+    )
+
+    async with ASession() as session:
+        await session.execute(stmt)
+        await session.commit()
