@@ -1,29 +1,25 @@
+from typing import Literal
 from anyutils import reg
 from nonebot import get_driver
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.decl_api import declarative_base
 
-from .config import DBSettings
+from .. import conf
 
-driver = get_driver()
-conf = DBSettings(**driver.config.dict())
 Base = declarative_base()
 
-reg.add(__name__, conf.plugin_pctrl_db)
+driver = get_driver()
 
-AEngine = reg.get(__name__)
+reg.add("sqlite", conf.db_link, debug=conf.debug)
+
+AEngine = reg.get("sqlite")
+flag: Literal["sqlite", "postgresql"] = AEngine.dialect.name
 
 ASession = sessionmaker(AEngine, expire_on_commit=False, class_=AsyncSession)
 
-from .plugin_models import (
-    PluginsBan,
-    PluginsCfg,
-    PyPluginsCfg,
-    PyPluginsBan,
-)
-
-from .user_models import UserPerm, PyUserPerm
+from .plugin_models import PluginsCfg, PyPluginsCfg
+from .user_models import PyUserPerm, UserPerm
 
 
 @driver.on_startup

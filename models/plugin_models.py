@@ -1,8 +1,9 @@
-from typing import Optional
+from typing import Any, Optional, Dict
 from anyutils import ModelConfig
 from pydantic import BaseModel
 from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.sqltypes import BigInteger, Boolean, String, Integer
+from sqlalchemy import text
 
 from . import Base
 
@@ -12,9 +13,9 @@ class PluginsCfg(Base):
 
     space = Column(BigInteger, primary_key=True)
     plugin_name = Column(String, primary_key=True)
-    is_start = Column(Boolean, server_default=True)
-    coolen_time = Column(BigInteger, server_default=0)
-    latest_time = Column(BigInteger, server_default=0)
+    is_start = Column(Boolean, server_default=text("True"))
+    coolen_time = Column(BigInteger, server_default=text("0"))
+    latest_time = Column(BigInteger, server_default=text("0"))
 
     __mapper_args__ = {"eager_defaults": True}
 
@@ -23,35 +24,27 @@ class PyPluginsCfg(BaseModel):
 
     space: int
     plugin_name: str
-    is_start: Optional[bool]
-    coolen_time: Optional[int]
-    latest_time: Optional[int]
+    is_start: bool
+    coolen_time: int
+    latest_time: int
 
     __primary_key__ = ["space", "plugin_name"]
 
-    class Config(ModelConfig):
-        pass
+    def __hash__(self):
+        return hash(tuple(self.__primary_key__))
 
+    def __eq__(self, other):
+        return set(self.__primary_key__) == set(other.__primary_key)
 
-class PluginsBan(Base):
-    __tablename__ = "_admin_plugins_global_ban"
-
-    space = Column(BigInteger, primary_key=True)
-    ban_type = Column(BigInteger, primary_key=True)
-    handle = Column(BigInteger, primary_key=True)
-    plugin_name = Column(String, primary_key=True)
-
-    __mapper_args__ = {"eager_defaults": True}
-
-
-class PyPluginsBan(BaseModel):
-
-    space: int
-    ban_type: int
-    handle: int
-    plugin_name: str
-
-    __primary_key__ = ["space", "ban_type", "handle", "plugin_name"]
+    @classmethod
+    def make_value(cls, stmt, spec: str | None = None) -> Dict:
+        if spec:
+            return dict(spec=eval(f"stmt.excluded.{spec}"))
+        r = dict()
+        for i in cls.__dict__["__fields__"].keys():
+            if i not in cls.__primary_key__:
+                r[i] = eval(f"stmt.excluded.{i}")
+        return r
 
     class Config(ModelConfig):
         pass

@@ -1,0 +1,9 @@
+{
+    "插件名(以nonebot log名为准)": {
+        "配置名(同config中相应项完全一样)" : "value"
+    },
+    "nonebot.plugins.echo": {
+        "is_start": true,
+        "cool_time": 10
+    }
+}

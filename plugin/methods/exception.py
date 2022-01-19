@@ -1,0 +1,2 @@
+class PluginNotFoundError(Exception):
+    pass
