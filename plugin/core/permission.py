@@ -12,11 +12,11 @@ elif flag == "postgresql":
     from sqlalchemy.dialects.postgresql import insert as ins
 
 
-async def ins_perm_update(data: list):
-    stmt = ins(UserPerm.__table__)  # type: ignore
+async def ins_perm_update(data: list[dict] | dict, ign=set(), all: set | None = None):
+    stmt = ins(UserPerm.__table__)
     stmt = stmt.on_conflict_do_update(
         index_elements=PyUserPerm.__primary_key__,
-        set_=PyUserPerm.make_value(stmt),
+        set_=PyUserPerm.make_value(stmt, ign, all),
     )
 
     async with ASession() as session:
@@ -25,7 +25,7 @@ async def ins_perm_update(data: list):
 
 
 async def ins_perm_ignore(data):
-    stmt = ins(UserPerm.__table__)  # type: ignore
+    stmt = ins(UserPerm.__table__)
     stmt = stmt.on_conflict_do_nothing()
 
     # async with ASession() as session:
@@ -33,30 +33,6 @@ async def ins_perm_ignore(data):
     await session.execute(stmt, data)
     await session.commit()
     await session.close()
-
-
-async def upd_perm(space: int, handle: int, name: str, perm: int, val: bool):
-    stmt = (
-        update(UserPerm.__table__)
-        .where(UserPerm.space == space)
-        .where(UserPerm.plugin_name == name)
-        .where(UserPerm.handle == handle)
-    )
-    if val:
-        stmt = stmt.values(perm_type=operators.op(UserPerm.perm_type, "|", (1 << perm)))  # type: ignore
-    else:
-        stmt = stmt.values(perm_type=operators.op(UserPerm.perm_type, "&", ~(1 << perm)))  # type: ignore
-    # async with ASession() as session:
-    session = ASession()
-    await session.execute(stmt)
-    await session.commit()
-    await session.close()
-
-
-async def ups_perm(**kw):
-    async with ASession() as session:
-        await session.merge(UserPerm(**kw))
-        await session.commit()
 
 
 async def get_perms(
@@ -86,7 +62,6 @@ async def del_perms(
     space: int | None = None,
     handle: int | None = None,
     name: str | None = None,
-    perm: int | None = None,
 ):
     stmt = delete(UserPerm.__table__)
     stmt = anywhere(
@@ -95,7 +70,6 @@ async def del_perms(
             (UserPerm.space, space),
             (UserPerm.handle, handle),
             (UserPerm.plugin_name, name),
-            (UserPerm.perm_type, perm),
         },
     )
 

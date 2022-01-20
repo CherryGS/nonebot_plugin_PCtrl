@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot_plugin_PCtrl"
-version = "0.1.9"
+version = "0.2.0"
 description = ""
 authors = ["CherryGS <uplliode@gmail.com>"]
 license = "MIT"
@@ -16,7 +16,7 @@ packages = [
 python = "^3.10"
 SQLAlchemy = "^1.4.29"
 aiosqlite = "^0.17.0"
-anyutils = "^0.1.0"
+anyutils = "^0.2.0"
 nonebot2 = "^2.0.0-beta.1"
 
 [tool.poetry.dev-dependencies]

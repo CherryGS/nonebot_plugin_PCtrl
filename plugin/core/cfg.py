@@ -25,11 +25,13 @@ async def get_plugins_cfg(
             return [PyPluginsCfg.construct(**i._asdict()) for i in res]
 
 
-async def ins_plugins_cfg_update(data: List[Dict[str, Any]]):
-    stmt = ins(PluginsCfg.__table__)  # type: ignore
+async def ins_plugins_cfg_update(
+    data: list[dict] | dict, ign=set(), all: set | None = None
+):
+    stmt = ins(PluginsCfg.__table__)
     stmt = stmt.on_conflict_do_update(
         index_elements=PyPluginsCfg.__primary_key__,
-        set_=PyPluginsCfg.make_value(stmt),
+        set_=PyPluginsCfg.make_value(stmt, ign, all),
     )
 
     async with ASession() as session:
@@ -38,19 +40,11 @@ async def ins_plugins_cfg_update(data: List[Dict[str, Any]]):
 
 
 async def ins_plugins_cfg_ignore(data: List[Any]):
-    stmt = ins(PluginsCfg.__table__)  # type: ignore
+    stmt = ins(PluginsCfg.__table__)
     stmt = stmt.on_conflict_do_nothing()
 
     async with ASession() as session:
         await session.execute(stmt, data)
-        await session.commit()
-
-
-async def ups_plugin_cfg(space: int, name: str, **kwargs):
-    session = ASession()
-
-    async with ASession() as session:
-        await session.merge(PluginsCfg(space=space, name=name, **kwargs))
         await session.commit()
 
 

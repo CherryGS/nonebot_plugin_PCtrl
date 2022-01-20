@@ -9,13 +9,13 @@
 
 ## 计划
 
-- [X] 全局插件开关
-- [X] 全局ban人/群
-- [X] 全局冷却时间
-- [X] 冷却时间信息显示与命令修改
-- [ ] 适配b1
-- [ ] 模块化
-- [ ] 使用 `core` + `pydantic` 代替 `ORM`
+- [X] ~~全局插件开关~~ 可以通过设置`ban`来实现
+- [X] 设置`ban`人/群或人群
+- [X] 设置冷却时间(通过配置文件)
+- [X] 适配b1
+- [X] 模块化
+- [X] 使用 `core` + `pydantic` 代替 `ORM`
+- [ ] 冷却时间信息显示与命令修改
 
 > 欢迎 issue 提出更多需求
 
@@ -28,95 +28,81 @@
 
 ## 功能
 
-### global.switch
+### ~~global.switch ~~ 已移除 , 请使用 `ban`
 
 - `/listplugins` 列出所有受控的插件的插件名称和开启状态
 - `/setplugin -p plugin_name` 将插件名为 `plugin_name` 的插件的开启状态反向
 
-### global.ban
+### ban
 
 - `/listban` 列出存在的 ban 的信息
-- `/ban -u handle -p plugin_name` ban 掉 QQ 号为 `handle` 的人使用名称为 `plugin_name` 插件的权限
-- `/ban -g handle -p plugin_name` ban 掉群号为 `handle` 的群使用名称为 `plugin_name` 插件的权限
-> 如果在群内执行 , 可以省略参数 `-g` , 会自动识别为该群
-- `/unban -u handle -p plugin_name` 取消 ban
-- `/unban -g handle -p plugin_name` 取消 ban
+- `/ban`
+- `/unban`
+  
+以上命令皆有三个参数 
 
-### global.cool
+1. `-u` : QQ号
+2. `-g` : 群号
+3. `-p` : 插件名称
+
+如果未输入参数则认为作用在全局 , 例如 `\ban -u 123456` 的意义为禁用 QQ 为 123456 的人在所有群使用所有插件的权限
+
+### cool
 
 本部分提供三个级别的控制 , plugin , matcher , function
 
-对于插件级别的控制 , 通过 nonebot2 提供的跨插件方法导出属性 `coolen_time = seconds` 其中 `seconds` 为冷却时间(s)
+对于插件级别的控制 , 通过配置文件实现 , 详见下
 
-```py
-from nonebot.plugin import export
-_export = export()
-_export.coolen_time = 5 # 冷却时间为 5s
-```
-
-对于 matcher 级别的控制 , 导出函数 `coolen_matcher(times, matcher)`
+对于 matcher 级别的控制 , 通过跨插件方法导入类 `cooling`
 ```py
 from nonebot.plugin import require
-_req = require("nonebot_plugin_PCtrl")
-_cmd = _req.coolen_matcher(5, on_keyword({"jls", "jiangly"}, priority=10)) # 对一个 matcher 启用冷却
-@_cmd.handle()
+req = require("nonebot_plugin_PCtrl")
+cmd = req.cooling.cool_matcher(5, on_keyword({"jls", "jiangly"}, priority=10)) # 对一个 matcher 启用冷却
+@cmd.handle()
 async def _(bot, event, state): pass
 ```
 
-对于 function 级别的控制 , 通过跨插件方法导入插件提供的装饰器 `coolen_async(times, True/False)`
+对于 function 级别的控制 , 通过跨插件方法导入类 `cooling`
 ```py
 from nonebot.plugin import require
-_req = require("admin.nonebot_plugin_PCtrl")
-coolen_async = _req.coolen_async
+req = require("admin.nonebot_plugin_PCtrl")
+coolen_async = req.cooling.cool_async
 
-# handle,run_preprocessor,got 等有着固定参数名称要求的第二维请填 True
-@some_matcher.handle()
-@coolen_async(5, True)
+@coolen_async(5)
 async def _(bot, event, state): pass
-
-# 其余填 False
-@coolen_async(5, False)
-async def _(*args, **kwargs): pass
 ```
-
-对于插件级别的冷却控制还有一些指令
-
-`/listcool` 显示当前插件级别冷却配置
-
-`/setcool -p plugin_name -t times` 设置插件冷却时间
-
-> :warning: 通过当前命令设置的冷却时间会被插件配置覆盖(如果有)
 
 ## 配置
-请添加到 nonebot2 配置文件中
-```ini
-##### Plugins Controller ######
-# 数据库配置(SQLAlchemy任意异步) ! 该选项会覆盖上述数据库配置
-## 数据库链接(请参考SQLAlchemy官方文档) 
-## url: https://docs.sqlalchemy.org/en/14/tutorial/engine.html#establishing-connectivity-the-engine
-## 下面是一个例子
-plugin_pctrl_db=sqlite+aiosqlite:///_my_admin.db
-## 如果真的想将该插件信息和其他插件共用库 , 请确保构造的是 SQLAlchemy 的异步的 AsyncEngine
-## 并且在该插件初始化前向全局设置传入 AsyncEngine , 设置 `get_driver().config.AEngine = your_AsyncEngine`
-## 需要注意的是 , 该设置优先于传入的 AsyncEngine
-# 冷却相关配置
-## 是否启用全局 reply , 启用后 , 如果调用在冷却中的函数 , 会尝试向调用主体(人/群)发送剩余冷却时长
-## 为空则不启用 , 否则需要填一个大于 0 的数字 , 代表发送剩余冷却时长的冷却时长
-coolen_time_reply=
-###############################
+请在 `bot.py` 同一目录下创建文件 `secure.yaml` (注意后缀名) , 然后根据自己的情况填写配置
+```yaml
+config:
+  basic:
+    reply_id: # !必须换成一个群号 , 是用来报告一些管理相关信息的群聊号码
+    bot_name: # bot 名
+    debug: false # 是否开启 `debug` 模式 (影响`sqla`的`echo`设置)
+    db_link: "sqlite+aiosqlite:///admin.sqlite" # sqla 数据库链接
+    ignore_global_control: # 忽略管控的插件名称
+      - nonebot_plugin_PCtrl
+
+  plugins:
+    # 配置越具体的优先级越高 , 同一具体的优先级 群 > qq号 > 插件名称
+    glob: # 使用 glob 代表所有插件
+      - space: 0 # 使用 0 代表私聊
+        coolen_time: 10 # 冷却时间
+      - space: 123456 # 否则代表群号为该数字的群
+        coolen_time: 10
+
+    echo: # 否则使用插件名(以 nonebot 加载显示的为准)
+      - space: 0
+        coolen_time: 10
+      - space: 1919810
+        coolen_time: 10
+
 ```
 
-测试过的方言 , 使用前请安装相关依赖 
+因为使用了特殊的语句~~(`mysql`泰拉)~~ , 所以以下方言二选一使用
 1. `postgresql+asyncpg` 需要安装 `asyncpg`
 2. `sqlite+aiosqlite` 默认依赖
-## 忽略管控
-
-对于不想被此插件管控的插件 , 请使用 nonebot2 提供的跨插件方法导出属性 `ignore_global_control = True`
-```py
-from nonebot.plugin import export
-_export = export()
-_export.ignore_global_control = True
-```
 
 ## 特别感谢
 
@@ -126,5 +112,6 @@ _export.ignore_global_control = True
 
 ## 部分更新
 
-- `0.1.6` : 全局冷却功能完成
+- `0.2.0` : 适配 `b1` , ~~优化整体逻辑~~
 - `0.1.8` : 冷却时间信息显示与命令修改功能完成
+- `0.1.6` : 全局冷却功能完成

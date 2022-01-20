@@ -1,6 +1,6 @@
-from typing import List
+import yaml
 from pydantic import BaseSettings
-from nonebot import get_driver
+from nonebot.log import logger
 
 
 class CtrlCfg(BaseSettings):
@@ -9,81 +9,50 @@ class CtrlCfg(BaseSettings):
     """
 
     # 基本配置
-    reply_id: int  # 报告信息的群聊号码
-    bot_name: str | List[str] = "小小"
-    debug: bool = False
-    plugin_cfg_file: str = "secure.json"  # 使用json格式
+    reply_id: int  # 报告一些管理相关信息的群聊号码
+    bot_name: str | list[str] = "小小"  # bot名字,管理时使用
+    debug: bool = False  # 是否开启 `debug` 模式 (影响`sqla`的`echo`设置)
+    ignore_global_control: set[str] = set()
 
     # 数据库配置
     db_link: str = "sqlite+aiosqlite:///admin.sqlite"
 
-    # 默认权限配置
+    # 默认插件权限配置 , 对于没有配置文件的插件生效
     default_ban: bool = False
-    default_switch: bool = False
     default_configure: bool = False
 
     class Config:
-        extra = "ignore"
+        extra = "forbid"
 
 
 class PluginCfg(BaseSettings):
     """
     单插件配置文件规范
+
+    Args:
+        `ignore_global_control` : 是否忽略管控
+        `is_start` : 是否默认已启动
+        `coolen_time` : 冷却时长
     """
 
-    ignore_global_control: bool = False
-    space: int = 0  # 该插件作用命名空间(默认为全局,其他值为群聊号码)
-    is_start: bool = True
+    space: int
     coolen_time: int = 0
 
     class Config:
-        extra = "ignore"
+        extra = "forbid"
 
 
-class GlobalSet(BaseSettings):
-    """
-    有 8 种情况 , 重要程度 `space` > `handle` > `plugin_name`
-
-    Args:
-        `BaseSettings` : [description]
-    """
-
-    space: int = 0  # 全局空间代表 (一般为群名)
-    handle: int = 0  # 全局 handle 代表 (一般为QQ名)
-    name: str = "_1"  # 全局插件名代表
+class config(BaseSettings):
+    basic: CtrlCfg
+    plugins: dict[str, list[PluginCfg]]
 
 
-class SubPermSet(BaseSettings):
-    lv: int  # 该权限在 perm 的第几位
+def load_config() -> config:
+    with open("secure.yaml", "r") as f:
+        cfg = yaml.safe_load(f.read())["config"]
+    logger.info(cfg)
+    return config.parse_obj(cfg)
 
 
-class PermSet(BaseSettings):
-    ban: SubPermSet  # 是否被ban
-    switch: SubPermSet  # 是否允许开关插件
-    configure: SubPermSet  # 是否允许修改配置
-
-
-conf = CtrlCfg(**get_driver().config.dict())
-
-perm = {
-    "ban": {
-        "lv": 0,
-    },
-    "switch": {
-        "lv": 1,
-    },
-    "configure": {
-        "lv": 2,
-    },
-}
-
-
-my = PermSet(**perm)  # type: ignore
-
-gbname = GlobalSet()
-
-default_perm = (
-    (conf.default_ban << my.ban.lv)
-    + (conf.default_switch << my.switch.lv)
-    + (conf.default_configure << my.configure.lv)
-)
+all_cfg = load_config()
+conf = all_cfg.basic

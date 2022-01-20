@@ -5,10 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.decl_api import declarative_base
 
-from .. import conf
+from ..config import conf
 
 Base = declarative_base()
-
 driver = get_driver()
 
 reg.add("sqlite", conf.db_link, debug=conf.debug)

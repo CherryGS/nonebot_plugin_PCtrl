@@ -1,19 +1,20 @@
+import inspect
+import time
 from functools import wraps
 from typing import List, Tuple, Type
-import time
-from nonebot import get_bot
+
+from nonebot import get_bot, get_driver
 from nonebot.exception import (
-    IgnoredException,
-    SkippedException,
     FinishedException,
-    RejectedException,
+    IgnoredException,
     PausedException,
+    RejectedException,
+    SkippedException,
     StopPropagation,
 )
 
 from ..config import conf
-import inspect
-from nonebot import get_driver
+from anyutils.exception import Cooling
 
 driver = get_driver()
 
@@ -27,8 +28,13 @@ async def _(bot1):
 class SenderFactory:
     group_id = conf.reply_id
 
-    def __init__(self, ignore: Tuple[Type[Exception], ...] = ()) -> None:
+    def __init__(
+        self,
+        ignore: Tuple[Type[Exception], ...] = (),
+        catch: Tuple[Type[Exception], ...] = (),
+    ) -> None:
         self.ign = ignore
+        self.catch = catch
 
     async def _send(self, msg: str):
         await bot.call_api(
@@ -44,6 +50,8 @@ class SenderFactory:
                 try:
                     r = await func(*args, **kwargs)
                     return r
+                except self.catch:
+                    pass
                 except self.ign:
                     raise
                 except Exception as e:
@@ -85,5 +93,6 @@ sender = SenderFactory(
         PausedException,
         StopPropagation,
         FinishedException,
-    )
+    ),
+    (Cooling,),
 )

@@ -4,7 +4,6 @@ from .cfg import (
     get_plugins_cfg,
     ins_plugins_cfg_ignore,
     ins_plugins_cfg_update,
-    ups_plugin_cfg,
 )
 from .permission import (
     PyPluginsCfg,
@@ -13,6 +12,4 @@ from .permission import (
     get_perms,
     ins_perm_ignore,
     ins_perm_update,
-    upd_perm,
-    ups_perm,
 )

@@ -1,7 +1,7 @@
 from anyutils import ModelConfig
 from pydantic import Field
 from sqlalchemy.sql.schema import Column
-from sqlalchemy.sql.sqltypes import BigInteger, String
+from sqlalchemy.sql.sqltypes import BigInteger, String, SmallInteger
 
 from . import Base, BsModel
 
@@ -16,7 +16,9 @@ class UserPerm(Base):
     space = Column(BigInteger, primary_key=True)
     handle = Column(BigInteger, primary_key=True)
     plugin_name = Column(String, primary_key=True)
-    perm_type = Column(BigInteger)
+    ban = Column(SmallInteger)
+    switch = Column(SmallInteger)
+    configure = Column(SmallInteger)
 
 
 class PyUserPerm(BsModel):
@@ -24,7 +26,9 @@ class PyUserPerm(BsModel):
     space: int = Field(pk=True)
     handle: int = Field(pk=True)
     plugin_name: str = Field(pk=True)
-    perm_type: int
+    ban: int = 0
+    switch: int = 0
+    configure: int = 0
 
     class Config(ModelConfig):
         pass
