@@ -1,7 +1,9 @@
 from typing import Any, Dict
+
 import orjson as js
 
-from .config import conf, PluginCfg
+from . import conf
+from .config import PluginCfg
 from .plugin.core import *
 
 

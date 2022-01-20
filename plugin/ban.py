@@ -16,6 +16,7 @@ from nonebot.rule import ArgumentParser
 
 from .methods import *
 from .sender import sender
+from .. import gbname
 
 
 @run_preprocessor

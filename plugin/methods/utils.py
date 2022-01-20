@@ -1,6 +1,5 @@
 from ..core import *
-from .config import *
-from .config import default_perm
+from ... import default_perm, gbname
 
 
 async def clean_perms(p=default_perm):

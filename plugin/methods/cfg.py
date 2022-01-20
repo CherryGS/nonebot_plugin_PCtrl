@@ -1,5 +1,5 @@
 from ..core import get_plugins_cfg
-from .config import gbname
+from ... import gbname
 
 
 async def check_plugin_exist(name: str) -> bool:

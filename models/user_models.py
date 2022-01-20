@@ -26,7 +26,8 @@ class PyUserPerm(BsModel):
     plugin_name: str = Field(pk=True)
     perm_type: int
 
-    __primary_key__ = {"space", "handle", "plugin_name"}
-
     class Config(ModelConfig):
         pass
+
+
+PyUserPerm.check_pk(UserPerm)

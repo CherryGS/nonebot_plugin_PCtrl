@@ -1,7 +1,8 @@
 from typing import List
-from .utils import *
-from .config import *
+
+from ... import my
 from ..core import *
+from .utils import *
 
 
 async def set_ban(space: int, handle: int, name: str):

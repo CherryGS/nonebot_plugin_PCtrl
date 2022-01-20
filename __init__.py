@@ -1,4 +1,3 @@
-import asyncio
 from typing import List
 
 from anyutils import HookMaker
@@ -12,7 +11,7 @@ from nonebot.plugin import export
 from nonebot.plugin.plugin import plugins
 from nonebot.typing import T_State
 
-from .config import CtrlCfg, PluginCfg, conf
+from .config import PluginCfg, conf, default_perm, gbname, my
 from .method import *
 
 driver = get_driver()
@@ -34,7 +33,13 @@ async def _(bot: Bot, event: Event, state: T_State = State()):
 
 
 async def init_db():
-    """初始化插件信息"""
+    """
+    初始化插件信息
+
+    有配置文件的 , 配置文件会覆盖数据库
+
+    没有配置文件的不会覆盖
+    """
     cfg = await load_config()
     now1 = dict()
     now2 = dict()
