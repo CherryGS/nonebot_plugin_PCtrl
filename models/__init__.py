@@ -1,5 +1,5 @@
 from typing import Literal
-from anyutils import reg
+from anyutils import reg, BsModel
 from nonebot import get_driver
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker

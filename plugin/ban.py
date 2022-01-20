@@ -63,6 +63,7 @@ async def _parser(args):
     return space, handle, name
 
 
+@sender.when_raise("参数错误")
 async def _nxt_parser(space, handle, name):
     space = space if space is not None else gbname.space
     handle = handle if handle is not None else gbname.handle

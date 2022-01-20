@@ -1,10 +1,9 @@
-from typing import Dict, Optional
 from anyutils import ModelConfig
-from pydantic import BaseModel
+from pydantic import Field
 from sqlalchemy.sql.schema import Column
-from sqlalchemy.sql.sqltypes import BigInteger, Boolean, String, Integer
+from sqlalchemy.sql.sqltypes import BigInteger, String
 
-from . import Base
+from . import Base, BsModel
 
 
 class UserPerm(Base):
@@ -20,35 +19,14 @@ class UserPerm(Base):
     perm_type = Column(BigInteger)
 
 
-class PyUserPerm(BaseModel):
+class PyUserPerm(BsModel):
 
-    space: int
-    handle: int
-    plugin_name: str
+    space: int = Field(pk=True)
+    handle: int = Field(pk=True)
+    plugin_name: str = Field(pk=True)
     perm_type: int
 
     __primary_key__ = {"space", "handle", "plugin_name"}
-
-    def __hash__(self):
-        return hash(tuple(self.dict(include=self.__primary_key__).values()))
-
-    def __eq__(self, other):
-        return (
-            self.dict(include=self.__primary_key__).values()
-            == other.dict(include=other.__primary_key__).values()
-        )
-
-    @classmethod
-    def make_value(cls, stmt, spec: str | None = None) -> Dict:
-        if spec:
-            if spec not in cls.__dict__["__fields__"].keys():
-                raise KeyError(f"{spec} not in __fields__")
-            return dict(spec=eval(f"stmt.excluded.{spec}"))
-        r = dict()
-        for i in cls.__dict__["__fields__"].keys():
-            if i not in cls.__primary_key__:
-                r[i] = eval(f"stmt.excluded.{i}")
-        return r
 
     class Config(ModelConfig):
         pass

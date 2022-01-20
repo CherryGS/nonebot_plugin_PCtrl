@@ -68,13 +68,13 @@ async def get_perms(
     session = ASession()
     stmt = select(UserPerm.__table__)
 
-    stmt = await anywhere(
+    stmt = anywhere(
         stmt,
-        (
+        {
             (UserPerm.space, space),
             (UserPerm.handle, handle),
             (UserPerm.plugin_name, name),
-        ),
+        },
     )
     async with ASession() as session:
         res: List[NamedTuple] = (await session.execute(stmt)).all()
@@ -89,14 +89,14 @@ async def del_perms(
     perm: int | None = None,
 ):
     stmt = delete(UserPerm.__table__)
-    stmt = await anywhere(
+    stmt = anywhere(
         stmt,
-        (
+        {
             (UserPerm.space, space),
             (UserPerm.handle, handle),
             (UserPerm.plugin_name, name),
             (UserPerm.perm_type, perm),
-        ),
+        },
     )
 
     async with ASession() as session:

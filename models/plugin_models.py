@@ -5,7 +5,7 @@ from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.sqltypes import BigInteger, Boolean, String, Integer
 from sqlalchemy import text
 
-from . import Base
+from . import Base, BsModel
 
 
 class PluginsCfg(Base):
@@ -20,7 +20,7 @@ class PluginsCfg(Base):
     __mapper_args__ = {"eager_defaults": True}
 
 
-class PyPluginsCfg(BaseModel):
+class PyPluginsCfg(BsModel):
 
     space: int
     plugin_name: str
@@ -34,7 +34,10 @@ class PyPluginsCfg(BaseModel):
         return hash(tuple(self.dict(include=self.__primary_key__).values()))
 
     def __eq__(self, other):
-        return self.dict(include=self.__primary_key__).values() == other.dict(include=other.__primary_key__).values()
+        return (
+            self.dict(include=self.__primary_key__).values()
+            == other.dict(include=other.__primary_key__).values()
+        )
 
     @classmethod
     def make_value(cls, stmt, spec: str | None = None) -> Dict:

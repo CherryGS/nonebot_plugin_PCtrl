@@ -17,9 +17,7 @@ async def get_plugins_cfg(
 ) -> List[PyPluginsCfg] | None:
     session = ASession()
     stmt = select(PluginsCfg.__table__)
-    stmt = await anywhere(
-        stmt, ((PluginsCfg.space, space), (PluginsCfg.plugin_name, name))
-    )
+    stmt = anywhere(stmt, {(PluginsCfg.space, space), (PluginsCfg.plugin_name, name)})
 
     async with ASession() as session:
         res: List[NamedTuple] = (await session.execute(stmt)).all()
@@ -59,9 +57,7 @@ async def ups_plugin_cfg(space: int, name: str, **kwargs):
 async def del_plugin_cfg(space: int | None = None, name: str | None = None):
     session = ASession()
     stmt = delete(PluginsCfg.__table__)
-    stmt = await anywhere(
-        stmt, ((PluginsCfg.space, space), (PluginsCfg.plugin_name, name))
-    )
+    stmt = anywhere(stmt, {(PluginsCfg.space, space), (PluginsCfg.plugin_name, name)})
 
     async with ASession() as session:
         await session.execute(stmt)
