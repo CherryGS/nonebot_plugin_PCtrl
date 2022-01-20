@@ -6,4 +6,3 @@ from .plugin import *
 export = export()
 export.sender = sender
 export.cooling = CoolMakerPlus()
-export.cooling.cool_async

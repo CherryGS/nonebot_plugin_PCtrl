@@ -71,6 +71,22 @@ coolen_async = req.cooling.cool_async
 @coolen_async(5)
 async def _(bot, event, state): pass
 ```
+### sender (工具类)
+
+通过跨插件方法导入类 `sender` , 源码位于 `plugin/sender.py`
+
+```py
+# 当有没有处理的 `Execption` 时汇报到群聊(见配置)
+@sender.when_raise(log)
+async def _():
+    pass
+
+# 当函数被调用时汇报到群聊
+@sender.when_func_call(log)
+async def _():
+    pass
+
+```
 
 ## 配置
 请在 `bot.py` 同一目录下创建文件 `secure.yaml` (注意后缀名) , 然后根据自己的情况填写配置
