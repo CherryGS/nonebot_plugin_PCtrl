@@ -2,15 +2,14 @@ from time import time
 
 from nonebot.adapters.onebot.v11 import Event, GroupMessageEvent, PrivateMessageEvent
 from nonebot.matcher import Matcher
-from nonebot.message import event_preprocessor
+from nonebot.message import run_preprocessor
 from nonebot.exception import IgnoredException
 from . import hook
-from .methods import GLOBAL_SPACE, load_cool_config
+from .methods import GLOBAL_SPACE, load_cool_config, ALL_PLUGIN_NAME
+from anyutils import CoolMaker
 
 tim = dict()
 cool = dict()
-
-from anyutils import CoolMaker
 
 
 class CoolMakerPlus(CoolMaker):
@@ -24,22 +23,21 @@ async def _():
     cool = await load_cool_config()
 
 
-@event_preprocessor
-async def _(event: Event):
+@run_preprocessor
+async def _(matcher: Matcher, event: Event):
     t = time()
     if isinstance(event, PrivateMessageEvent):
-        k = (GLOBAL_SPACE, event.user_id)
+        k = (GLOBAL_SPACE, matcher.plugin_name)
     elif isinstance(event, GroupMessageEvent):
-        k = (event.group_id, event.user_id)
+        k = (event.group_id, matcher.plugin_name)
     else:
         return
-
     global tim, cool
 
+    if k not in cool:
+        k = (k[0], ALL_PLUGIN_NAME)
+
     if k in cool:
-        if cool[k] == 0:
-            cool.pop(k)
-            return
         if k in tim and tim[k] + cool[k] > t:
             raise IgnoredException("coolen")
         else:
