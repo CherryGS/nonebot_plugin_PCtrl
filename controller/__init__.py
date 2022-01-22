@@ -1,7 +1,6 @@
 from nonebot import export
 
-from admin.nonebot_plugin_PCtrl.plugin.cool import CoolMakerPlus
-from .plugin import *
+from .plugin import CoolMakerPlus, sender
 
 export = export()
 export.sender = sender

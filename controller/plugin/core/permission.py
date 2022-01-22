@@ -1,9 +1,7 @@
 from typing import List, Literal, NamedTuple
 
-from sqlalchemy import delete, insert, select, update, or_, and_
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.sql import operators
-from ...models import ASession, PluginsCfg, PyPluginsCfg, PyUserPerm, UserPerm, flag
+from sqlalchemy import delete, select
+from ...models import ASession, PyUserPerm, UserPerm, flag
 from anyutils import anywhere
 
 if flag == "sqlite":

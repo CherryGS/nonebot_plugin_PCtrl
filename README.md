@@ -27,12 +27,6 @@
 4. 数据库初始化未完成之前所有事件(除元事件)都会被忽略
 
 ## 功能
-
-### ~~global.switch ~~ 已移除 , 请使用 `ban`
-
-- `/listplugins` 列出所有受控的插件的插件名称和开启状态
-- `/setplugin -p plugin_name` 将插件名为 `plugin_name` 的插件的开启状态反向
-
 ### ban
 
 - `/listban` 列出存在的 ban 的信息
@@ -71,6 +65,12 @@ coolen_async = req.cooling.cool_async
 @coolen_async(5)
 async def _(bot, event, state): pass
 ```
+
+对于通过 `cooling` 类实现的冷却 , 当未到冷却时间调用时会 `raise CoolingError`
+```py
+# 参见
+from anyutils import CoolingError
+```
 ### sender (工具类)
 
 通过跨插件方法导入类 `sender` , 源码位于 `plugin/sender.py`
@@ -89,7 +89,7 @@ async def _():
 ```
 
 ## 配置
-请在 `bot.py` 同一目录下创建文件 `secure.yaml` (注意后缀名) , 然后根据自己的情况填写配置
+请在 `bot.py` 同一目录下创建文件 `secure.yaml` (注意后缀名) , 然后根据自己的情况填写配置 (目录下有一个示例)
 ```yaml
 config:
   basic:

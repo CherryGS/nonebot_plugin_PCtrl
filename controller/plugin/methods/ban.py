@@ -1,7 +1,7 @@
+from ...models import PyUserPerm
 from .config import *
-from .utils import *
 from .exception import *
-from .config import *
+from .utils import *
 
 
 async def set_ban(space: int, handle: int, name: str):

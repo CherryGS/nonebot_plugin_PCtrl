@@ -14,7 +14,7 @@ from nonebot.exception import (
 )
 
 from ..config import conf
-from anyutils.exception import Cooling
+from anyutils.exception import CoolingError
 
 driver = get_driver()
 
@@ -94,5 +94,5 @@ sender = SenderFactory(
         StopPropagation,
         FinishedException,
     ),
-    (Cooling,),
+    (CoolingError,),
 )
