@@ -12,11 +12,19 @@ config:
     # 配置越具体的优先级越高 , 同一具体的优先级 群 > qq号 > 插件名称
     glob: # 使用 glob 代表所有插件
       - space: 0 # 使用 0 代表私聊
-        coolen_time: 10 # ! 全局冷却时间影响私聊
-      - space: 1919810
-        coolen_time: 10
+        coolen_time: 0 # ! 全局冷却时间影响私聊
 
     echo: # 否则使用插件名(以 nonebot 加载显示的为准)
+      - space: 0
+        coolen_time: 10
+      - space: 1919810
+        coolen_time: 10
+    示例:
+      - space: 0
+        coolen_time: 10
+      - space: 1919810
+        coolen_time: 10
+    文件:
       - space: 0
         coolen_time: 10
       - space: 1919810

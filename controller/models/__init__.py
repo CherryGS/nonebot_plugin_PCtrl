@@ -10,3 +10,8 @@ from .user_models import PyUserPerm, UserPerm
 async def init(engine: AsyncEngine):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+
+async def dele(engine: AsyncEngine):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)

@@ -1,0 +1,1 @@
+python -m pytest --cov=controller/ --cov-report=xml --db_choice=postgres

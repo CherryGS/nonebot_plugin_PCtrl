@@ -2,15 +2,18 @@ import yaml
 from nonebot import export
 
 from .config import config as cfg
+import os
 
 
-def load_config() -> cfg:
-    with open("secure.yaml", "r") as f:
+def load_config(pth) -> cfg:
+    if not os.path.isfile(pth):
+        pth = os.path.dirname(__file__) + "/secure.yaml"
+    with open(pth, "r") as f:
         res: cfg = yaml.safe_load(f.read())["config"]
     return cfg.parse_obj(res)
 
 
-all_cfg = load_config()
+all_cfg = load_config("secure.yaml")
 conf = all_cfg.basic
 
 from .plugin import CoolMakerPlus, sender
