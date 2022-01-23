@@ -1,12 +1,13 @@
 from time import time
 
+from anyutils import CoolMaker
 from nonebot.adapters.onebot.v11 import Event, GroupMessageEvent, PrivateMessageEvent
+from nonebot.exception import IgnoredException
 from nonebot.matcher import Matcher
 from nonebot.message import run_preprocessor
-from nonebot.exception import IgnoredException
-from . import hook
-from .methods import GLOBAL_SPACE, load_cool_config, ALL_PLUGIN_NAME
-from anyutils import CoolMaker
+
+from ..methods import ALL_PLUGIN_NAME, GLOBAL_SPACE, load_cool_config
+from . import AEngine, ASession, flag, hook
 
 tim = dict()
 cool = dict()
@@ -17,10 +18,11 @@ class CoolMakerPlus(CoolMaker):
         matcher.simple_run = self.cool_async(tim)(matcher.simple_run)
 
 
-@hook.add_hook
+@hook.add_async_func
 async def _():
     global cool
-    cool = await load_cool_config()
+    async with ASession() as session:
+        cool = await load_cool_config(session)
 
 
 @run_preprocessor

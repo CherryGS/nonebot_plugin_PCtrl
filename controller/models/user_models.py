@@ -1,9 +1,9 @@
-from anyutils import ModelConfig
+from anyutils import ModelConfig, BsModel
 from pydantic import Field
 from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.sqltypes import BigInteger, String, SmallInteger
 
-from . import Base, BsModel
+from . import Base
 
 
 class UserPerm(Base):

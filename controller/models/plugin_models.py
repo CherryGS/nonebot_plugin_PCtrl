@@ -1,10 +1,10 @@
-from anyutils import ModelConfig
+from anyutils import ModelConfig, BsModel
 from pydantic import Field
 from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.sqltypes import BigInteger, Boolean, String
 from sqlalchemy import text
 
-from . import Base, BsModel
+from . import Base
 
 
 class PluginsCfg(Base):
@@ -28,7 +28,3 @@ class PyPluginsCfg(BsModel):
 
 
 PyPluginsCfg.check_pk(PluginsCfg)
-
-
-if __name__ == "__main__":
-    pass

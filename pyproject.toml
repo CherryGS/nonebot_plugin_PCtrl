@@ -9,7 +9,8 @@ repository = "https://github.com/CherryGS/nonebot_plugin_PCtrl"
 readme = "README.md"
 documentation = "https://github.com/CherryGS/nonebot_plugin_PCtrl#readme"
 packages = [
-    { include = "controller", from = "." }
+    { include = "controller", from = "." },
+    { include = "__init__.py", from = "." }
 ]
 
 [tool.poetry.dependencies]
@@ -20,6 +21,13 @@ anyutils = "^0.2.0"
 nonebot2 = "^2.0.0-beta.1"
 
 [tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+pytest-asyncio = "^0.17.2"
+pytest-cover = "^3.0.0"
+
+[tool.pytest.ini_options]
+testpaths = "test"
+asyncio_mode="auto"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

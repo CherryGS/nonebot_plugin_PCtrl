@@ -13,8 +13,8 @@ from nonebot.exception import (
     StopPropagation,
 )
 
-from ..config import conf
-from anyutils.exception import CoolingError
+from .. import conf
+from anyutils import CoolingError
 
 driver = get_driver()
 

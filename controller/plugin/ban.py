@@ -14,33 +14,39 @@ from nonebot.plugin import on_shell_command
 from nonebot.rule import ArgumentParser
 from nonebot.typing import T_State
 
-from ..config import all_cfg
-from .methods import *
-from .methods.exception import NoConfigError
+from .. import all_cfg
+from ..methods import *
+from ..methods.exception import NoConfigError
+from . import AEngine, ASession, flag
 from .sender import sender
 
 
 @run_preprocessor
 async def _(matcher: Matcher, event: Event):
-    if matcher.plugin_name == None:
-        raise TypeError("插件名为空")
-    if not await check_plugin_exist(matcher.plugin_name):
-        logger.debug(f"plugin {matcher.plugin_name} not found.")
-        return
-    try:
-        if isinstance(event, PrivateMessageEvent):
-            if await check_ban(GLOBAL_SPACE, event.user_id, matcher.plugin_name):
-                logger.warning(f"ban QQ{event.user_id} 插件{matcher.plugin_name}")
+    async with ASession() as session:
+        if matcher.plugin_name == None:
+            raise TypeError("插件名为空")
+        if not await check_plugin_exist(session, matcher.plugin_name):
+            logger.debug(f"plugin {matcher.plugin_name} not found.")
+            return
+        try:
+            if isinstance(event, PrivateMessageEvent):
+                if await check_ban(
+                    session, GLOBAL_SPACE, event.user_id, matcher.plugin_name
+                ):
+                    logger.warning(f"ban QQ{event.user_id} 插件{matcher.plugin_name}")
+                    raise IgnoredException("ban")
+            elif isinstance(event, GroupMessageEvent):
+                if await check_ban(
+                    session, event.group_id, event.user_id, matcher.plugin_name
+                ):
+                    logger.warning(
+                        f"ban 群{event.group_id} QQ{event.user_id} 插件{matcher.plugin_name}"
+                    )
+                    raise IgnoredException("ban")
+        except NoConfigError:
+            if all_cfg.basic.default_ban:
                 raise IgnoredException("ban")
-        elif isinstance(event, GroupMessageEvent):
-            if await check_ban(event.group_id, event.user_id, matcher.plugin_name):
-                logger.warning(
-                    f"ban 群{event.group_id} QQ{event.user_id} 插件{matcher.plugin_name}"
-                )
-                raise IgnoredException("ban")
-    except NoConfigError:
-        if all_cfg.basic.default_ban:
-            raise IgnoredException("ban")
 
 
 @sender.when_raise("参数错误")
@@ -90,7 +96,8 @@ cmd0 = on_shell_command("unban", parser=parser, priority=1, permission=SUPERUSER
 async def _(bot: Bot, event: Event, state: T_State = State(), args=ShellCommandArgs()):
     space, handle, name = await _parser(args)
     space, handle, name = await _nxt_parser(space, handle, name)
-    await del_ban(space, handle, name)
+    async with ASession() as session:
+        await del_ban(flag, session, space, handle, name)
     await cmd0.finish(f"unban成功({space},{handle},{name})")
 
 
@@ -102,7 +109,8 @@ cmd1 = on_shell_command("ban", parser=parser, priority=1, permission=SUPERUSER)
 async def _(bot: Bot, event: Event, args=ShellCommandArgs()):
     space, handle, name = await _parser(args)
     space, handle, name = await _nxt_parser(space, handle, name)
-    await set_ban(space, handle, name)
+    async with ASession() as session:
+        await set_ban(flag, session, space, handle, name)
     await cmd1.finish(f"ban成功({space},{handle},{name})")
 
 
@@ -113,7 +121,8 @@ cmd2 = on_shell_command("listban", parser=parser, priority=1, permission=SUPERUS
 @sender.when_raise()
 async def _(bot: Bot, event: Event, args=ShellCommandArgs()):
     space, handle, name = await _parser(args)
-    res = await get_all_ban(space, handle, name)
+    async with ASession() as session:
+        res = await get_all_ban(session, space, handle, name)
     if not res:
         msg = "空"
     else:

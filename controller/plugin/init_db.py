@@ -1,4 +1,3 @@
-from anyutils import HookMaker
 from nonebot import get_driver
 from nonebot.adapters.onebot.v11 import Bot, Event, GroupMessageEvent, MetaEvent
 from nonebot.exception import IgnoredException
@@ -8,9 +7,9 @@ from nonebot.params import State
 from nonebot.plugin.plugin import plugins
 from nonebot.typing import T_State
 
-from .methods import init_plugins_to_db
-from ..config import all_cfg
-from . import hook
+from .. import all_cfg
+from ..methods import init_plugins_to_db
+from . import AEngine, ASession, flag, hook
 
 driver = get_driver()
 is_init = False
@@ -34,7 +33,8 @@ async def init_db():
     没有配置文件的不会覆盖
     """
     plugins_name: set[str] = set(plugins.keys()) - all_cfg.basic.ignore_global_control
-    res = await init_plugins_to_db(plugins_name, all_cfg.plugins)
+    async with ASession() as session:
+        res = await init_plugins_to_db(flag, session, plugins_name, all_cfg.plugins)
     if res:
         logger.warning(f"有{len(res)}个配置文件未被使用,其配置文件插件名为{str(res)}")
     logger.success(f"插件信息初始化成功 , 初始化了 {len(plugins_name)} 个插件")
@@ -45,7 +45,7 @@ async def _(bot):
     global is_init
     if not is_init:
         await init_db()
-        await hook.run_hook()
+        await hook.run_async_func()
         is_init = True
 
 

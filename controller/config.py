@@ -1,6 +1,4 @@
-import yaml
 from pydantic import BaseSettings
-from nonebot.log import logger
 
 
 class CtrlCfg(BaseSettings):
@@ -45,14 +43,3 @@ class PluginCfg(BaseSettings):
 class config(BaseSettings):
     basic: CtrlCfg
     plugins: dict[str, list[PluginCfg]]
-
-
-def load_config() -> config:
-    with open("secure.yaml", "r") as f:
-        cfg = yaml.safe_load(f.read())["config"]
-    logger.info(cfg)
-    return config.parse_obj(cfg)
-
-
-all_cfg = load_config()
-conf = all_cfg.basic
