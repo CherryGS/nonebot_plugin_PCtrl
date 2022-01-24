@@ -1,8 +1,8 @@
+import os
+
 import yaml
-from nonebot import export
 
 from .config import config as cfg
-import os
 
 
 def load_config(pth) -> cfg:
@@ -16,8 +16,11 @@ def load_config(pth) -> cfg:
 all_cfg = load_config("secure.yaml")
 conf = all_cfg.basic
 
-from .plugin import CoolMakerPlus, sender
+if not os.environ.get("RUN_TESTS"):
+    from nonebot import export
 
-export = export()
-export.sender = sender
-export.cooling = CoolMakerPlus()
+    from .plugin import CoolMakerPlus, sender
+
+    export = export()
+    export.sender = sender
+    export.cooling = CoolMakerPlus()

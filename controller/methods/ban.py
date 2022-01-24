@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..core import get_perms, ins_perm_update, INSERT_ON_CONFLICT, merge_perm
+from ..core import get_perms, insert_perm_update, INSERT_ON_CONFLICT, merge_perm
 from ..models import PyUserPerm
 from .config import NO_TYPE, REJECT_TYPE
 from .exception import NoConfigError
@@ -9,7 +9,7 @@ from .utils import get_all_cate_perm
 
 async def set_ban(flag: int, session: AsyncSession, space: int, handle: int, name: str):
     if flag in INSERT_ON_CONFLICT:
-        await ins_perm_update(
+        await insert_perm_update(
             flag,
             session,
             data=PyUserPerm(
@@ -28,7 +28,7 @@ async def set_ban(flag: int, session: AsyncSession, space: int, handle: int, nam
 
 async def del_ban(flag: int, session: AsyncSession, space: int, handle: int, name: str):
     if flag in INSERT_ON_CONFLICT:
-        await ins_perm_update(
+        await insert_perm_update(
             flag,
             session,
             data=PyUserPerm(

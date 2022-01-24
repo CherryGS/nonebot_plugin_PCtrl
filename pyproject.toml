@@ -29,6 +29,7 @@ pytest-cover = "^3.0.0"
 testpaths="test"
 asyncio_mode="auto"
 postgresql_db_url="postgresql+asyncpg://testbot:testbot@127.0.0.1:5432/test"
+mysql_db_url=""
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

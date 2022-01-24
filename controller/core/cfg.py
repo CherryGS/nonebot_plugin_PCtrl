@@ -18,9 +18,14 @@ async def insert_cfg_update(
     r = get_engine_type_dial(flag)
     stmt = r.insert(PluginsCfg.__table__)
 
+    res = PyPluginsCfg.make_value(stmt, ign, all)
+    if not res:
+        await insert_cfg_ignore(flag, session, data)
+        return
+
     stmt = stmt.on_conflict_do_update(
         index_elements=PyPluginsCfg.__primary_key__,
-        set_=PyPluginsCfg.make_value(stmt, ign, all),
+        set_=res,
     )
 
     await session.execute(stmt, data)
@@ -41,7 +46,7 @@ async def insert_cfg_after_query(session: AsyncSession, data: list[dict] | dict)
     if isinstance(data, dict):
         data = [data]
     for i in data:
-        if (
+        if not (
             await session.execute(
                 anywhere_lim(
                     select(PluginsCfg.__table__),
