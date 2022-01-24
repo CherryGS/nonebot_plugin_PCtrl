@@ -18,9 +18,14 @@ async def insert_cfg_update(
     r = get_engine_type_dial(flag)
     stmt = r.insert(PluginsCfg.__table__)
 
+    res = PyPluginsCfg.make_value(stmt, ign, all)
+    if not res:
+        await insert_cfg_ignore(flag, session, data)
+        return
+
     stmt = stmt.on_conflict_do_update(
         index_elements=PyPluginsCfg.__primary_key__,
-        set_=PyPluginsCfg.make_value(stmt, ign, all),
+        set_=res,
     )
 
     await session.execute(stmt, data)
@@ -41,14 +46,14 @@ async def insert_cfg_after_query(session: AsyncSession, data: list[dict] | dict)
     if isinstance(data, dict):
         data = [data]
     for i in data:
-        if (
+        if not (
             await session.execute(
                 anywhere_lim(
                     select(PluginsCfg.__table__),
-                    {
+                    (
                         (PluginsCfg.space, i["space"]),
                         (PluginsCfg.plugin_name, i["plugin_name"]),
-                    },
+                    ),
                     len(PyPluginsCfg.__primary_key__),
                 )
             )
@@ -69,7 +74,7 @@ async def get_plugins_cfg(
     session: AsyncSession, space: int | None = None, name: str | None = None
 ) -> list[PyPluginsCfg] | None:
     stmt = select(PluginsCfg.__table__)
-    stmt = anywhere(stmt, {(PluginsCfg.space, space), (PluginsCfg.plugin_name, name)})
+    stmt = anywhere(stmt, ((PluginsCfg.space, space), (PluginsCfg.plugin_name, name)))
 
     res: list[NamedTuple] = (await session.execute(stmt)).all()
     if res:
@@ -80,7 +85,7 @@ async def del_plugin_cfg(
     session: AsyncSession, space: int | None = None, name: str | None = None
 ):
     stmt = delete(PluginsCfg.__table__)
-    stmt = anywhere(stmt, {(PluginsCfg.space, space), (PluginsCfg.plugin_name, name)})
+    stmt = anywhere(stmt, ((PluginsCfg.space, space), (PluginsCfg.plugin_name, name)))
 
     await session.execute(stmt)
     await session.commit()

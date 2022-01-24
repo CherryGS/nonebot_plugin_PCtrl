@@ -66,7 +66,7 @@ async def _parser(args):
         else int(args.u)
     )
     name = (
-        ALL_PLUGIN_NAME
+        GLOBAL_PLUGIN_NAME
         if isinstance(args.p, ParserExit)
         else None
         if args.p == None
@@ -79,7 +79,7 @@ async def _parser(args):
 async def _nxt_parser(space, handle, name):
     space = space if space is not None else GLOBAL_SPACE
     handle = handle if handle is not None else GLOBAL_HANDLE
-    name = name if name is not None else ALL_PLUGIN_NAME
+    name = name if name is not None else GLOBAL_PLUGIN_NAME
     return space, handle, name
 
 
@@ -97,7 +97,7 @@ async def _(bot: Bot, event: Event, state: T_State = State(), args=ShellCommandA
     space, handle, name = await _parser(args)
     space, handle, name = await _nxt_parser(space, handle, name)
     async with ASession() as session:
-        await del_ban(flag, session, space, handle, name)
+        await del_type(flag, session, space, handle, name)
     await cmd0.finish(f"unban成功({space},{handle},{name})")
 
 
@@ -128,12 +128,12 @@ async def _(bot: Bot, event: Event, args=ShellCommandArgs()):
     else:
         msg = ""
         for i in res:
-            if i.ban != REJECT_TYPE:
+            if i.ban != ENABLE_TYPE:
                 continue
             msg += ("全局" if i.space == GLOBAL_SPACE else f"群{i.space}") + "中"
             msg += ("所有人" if i.handle == GLOBAL_HANDLE else f"QQ{i.handle}") + "被ban"
             msg += (
-                "所有插件" if i.plugin_name == ALL_PLUGIN_NAME else f"插件{i.plugin_name}"
+                "所有插件" if i.plugin_name == GLOBAL_PLUGIN_NAME else f"插件{i.plugin_name}"
             ) + "\n"
         msg = msg if msg else "空"
     if not res:
@@ -141,12 +141,12 @@ async def _(bot: Bot, event: Event, args=ShellCommandArgs()):
     else:
         msg1 = ""
         for i in res:
-            if i.ban != ALLOW_TYPE:
+            if i.ban != DISABLE_TYPE:
                 continue
             msg1 += ("全局" if i.space == GLOBAL_SPACE else f"群{i.space}") + "中"
             msg1 += ("所有人" if i.handle == GLOBAL_HANDLE else f"QQ{i.handle}") + "被允许使用"
             msg1 += (
-                "所有插件" if i.plugin_name == ALL_PLUGIN_NAME else f"插件{i.plugin_name}"
+                "所有插件" if i.plugin_name == GLOBAL_PLUGIN_NAME else f"插件{i.plugin_name}"
             ) + "\n"
         msg1 = msg1 if msg1 else "空"
     await cmd2.send("ban列表")
