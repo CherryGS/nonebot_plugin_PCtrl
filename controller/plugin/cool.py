@@ -6,7 +6,7 @@ from nonebot.exception import IgnoredException
 from nonebot.matcher import Matcher
 from nonebot.message import run_preprocessor
 
-from ..methods import ALL_PLUGIN_NAME, GLOBAL_SPACE, load_cool_config
+from ..methods import GLOBAL_PLUGIN_NAME, GLOBAL_SPACE, load_cool_config
 from . import AEngine, ASession, flag, hook
 
 tim = dict()
@@ -37,7 +37,7 @@ async def _(matcher: Matcher, event: Event):
     global tim, cool
 
     if k not in cool:
-        k = (k[0], ALL_PLUGIN_NAME)
+        k = (k[0], GLOBAL_PLUGIN_NAME)
 
     if k in cool:
         if k in tim and tim[k] + cool[k] > t:

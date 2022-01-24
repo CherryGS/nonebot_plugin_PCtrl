@@ -1,6 +1,4 @@
-from collections import namedtuple
 from random import choices, randint, sample
-from typing import Type
 
 import pytest
 from controller.core.permission import (
@@ -12,7 +10,9 @@ from controller.core.permission import (
     insert_perm_ignore,
     insert_perm_update,
     merge_perm,
+    set_perms,
 )
+from controller.methods import DISABLE_TYPE, ENABLE_TYPE, NO_TYPE
 from pydantic import parse_obj_as
 from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,25 +25,16 @@ def randstr(l):
     return "".join(sample(string, l))
 
 
-def make_data(model: Type, siz: int, **kwargs):
-    tp = namedtuple("np", list(kwargs.keys()))
-    res = []
-    for i in range(siz):
-        res += [tp(*[j[i] for j in kwargs.values()])]
-    obj = parse_obj_as(list[model], res)
-    return [i.dict() for i in obj]
-
-
 key_space = [i for i in range(n)]
 key_space_same = [1 for _ in range(n)]
 key_handle = [i for i in range(n)]
 key_plugin_name = [randstr(30) for _ in range(n)]
-old_ban = [0 for _ in range(n)]
-new_ban = [1 for _ in range(n)]
-old_switch = [0 for _ in range(n)]
-new_switch = [1 for _ in range(n)]
-old_configure = [0 for _ in range(n)]
-new_configure = [1 for _ in range(n)]
+old_ban = [NO_TYPE for _ in range(n)]
+new_ban = [ENABLE_TYPE for _ in range(n)]
+old_switch = [NO_TYPE for _ in range(n)]
+new_switch = [ENABLE_TYPE for _ in range(n)]
+old_configure = [NO_TYPE for _ in range(n)]
+new_configure = [ENABLE_TYPE for _ in range(n)]
 
 data1 = [
     PyUserPerm(
@@ -94,19 +85,35 @@ class Test:
         await insert_perm_update(engine_type, session, data1)
         async for i in self.query_data(session, data1):
             assert len(i) == 1
+        async for i in self.query_data(session, data2):
+            assert len(i) == 0
 
         await insert_perm_update(
             engine_type, session, data2, ign=("ban", "switch", "configure")
         )
         async for i in self.query_data(session, data1):
             assert len(i) == 1
+        async for i in self.query_data(session, data2):
+            assert len(i) == 0
 
         await insert_perm_update(engine_type, session, data2)
         async for i in self.query_data(session, data2):
             assert len(i) == 1
-
         async for i in self.query_data(session, data1):
             assert len(i) == 0
+
+    @pytest.mark.usefixtures("init_table")
+    async def test_set_perms(self, session: AsyncSession):
+        await session.execute(insert(UserPerm.__table__), data1)
+        await session.commit()
+
+        await set_perms(session, ((UserPerm.ban, ENABLE_TYPE),))
+        async for i in self.query_data(session, data2):
+            assert len(i) == 1
+
+        await set_perms(session, ((UserPerm.ban, NO_TYPE),))
+        async for i in self.query_data(session, data1):
+            assert len(i) == 1
 
     @pytest.mark.usefixtures("init_table")
     async def test_insert_perm_after_query(self, session: AsyncSession):

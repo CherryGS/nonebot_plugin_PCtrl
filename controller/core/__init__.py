@@ -14,5 +14,6 @@ from .permission import (
     insert_perm_ignore,
     insert_perm_update,
     merge_perm,
+    set_perms,
 )
 from .utils import get_engine_type_by_name, get_engine_type_dial

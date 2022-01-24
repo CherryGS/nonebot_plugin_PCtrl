@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core import get_perms
 from ..models import PyUserPerm
-from .config import ALL_PLUGIN_NAME, GLOBAL_HANDLE, GLOBAL_SPACE
+from .config import GLOBAL_PLUGIN_NAME, GLOBAL_HANDLE, GLOBAL_SPACE
 
 
 async def get_all_cate_perm(
@@ -12,13 +12,13 @@ async def get_all_cate_perm(
 ) -> list[PyUserPerm] | None:
     query = [
         get_perms(session, space, handle, name),
-        get_perms(session, space, handle, ALL_PLUGIN_NAME),
+        get_perms(session, space, handle, GLOBAL_PLUGIN_NAME),
         get_perms(session, space, GLOBAL_HANDLE, name),
         get_perms(session, GLOBAL_SPACE, handle, name),
-        get_perms(session, space, GLOBAL_HANDLE, ALL_PLUGIN_NAME),
-        get_perms(session, GLOBAL_SPACE, handle, ALL_PLUGIN_NAME),
+        get_perms(session, space, GLOBAL_HANDLE, GLOBAL_PLUGIN_NAME),
+        get_perms(session, GLOBAL_SPACE, handle, GLOBAL_PLUGIN_NAME),
         get_perms(session, GLOBAL_SPACE, GLOBAL_HANDLE, name),
-        get_perms(session, GLOBAL_SPACE, GLOBAL_HANDLE, ALL_PLUGIN_NAME),
+        get_perms(session, GLOBAL_SPACE, GLOBAL_HANDLE, GLOBAL_PLUGIN_NAME),
     ]
     res = await asyncio.gather(*query)
     r = list()

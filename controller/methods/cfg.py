@@ -11,7 +11,7 @@ from ..core import (
     merge_plugins_cfg,
 )
 from ..models import PyPluginsCfg
-from .config import ALL_PLUGIN_NAME, GLOBAL_SPACE
+from .config import GLOBAL_PLUGIN_NAME, GLOBAL_SPACE
 
 
 async def check_plugin_exist(session: AsyncSession, name: str) -> bool:
@@ -58,8 +58,8 @@ async def init_plugins_to_db(
 
     if "glob" in plugins:
         for i in plugins["glob"]:
-            now.add(PyPluginsCfg(**i.dict(), plugin_name=ALL_PLUGIN_NAME))
-        name.add(ALL_PLUGIN_NAME)
+            now.add(PyPluginsCfg(**i.dict(), plugin_name=GLOBAL_PLUGIN_NAME))
+        name.add(GLOBAL_PLUGIN_NAME)
 
     for i in plugins.items():
         if i[0] not in plugins_name:

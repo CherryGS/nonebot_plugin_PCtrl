@@ -3,6 +3,7 @@ import os
 import yaml
 
 from .config import config as cfg
+from .methods.exception import *
 
 
 def load_config(pth) -> cfg:
