@@ -7,9 +7,6 @@ from . import Base
 
 
 class UserPerm(Base):
-    """
-    `perm_type` : 每一个二进制位代表一种权限情况
-    """
 
     __tablename__ = "_admin_user_permissions"
 

@@ -1,0 +1,5 @@
+[tool.pytest.ini_options]
+testpaths=""
+asyncio_mode="auto"
+postgresql_db_url=""
+mysql_db_url=""

@@ -1,0 +1,16 @@
+# global values
+GLOBAL_PLUGIN_NAME = "_0"
+GLOBAL_USER_ID = 0
+GLOBAL_SPACE_ID = 0
+GLOBAL_CHANNEL_ID = 0
+
+# default permissions
+DEFAULT_NONE_TYPE = -1
+
+# ban
+BAN = 1
+UNBAN = 0
+
+# configure
+HAVE_CFG_PERMISSIONS = 1
+HAVENOT_CFG_PERMISSIONS = 0

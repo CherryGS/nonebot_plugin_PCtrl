@@ -1,0 +1,1 @@
+python -m pytest -s --cov=controller/ --cov-report=xml --db_choice=sqlite --durations=0 -s
