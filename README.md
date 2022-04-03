@@ -1,4 +1,7 @@
 # Plugins controller for nonebot2
+
+**废弃 , 请勿使用**
+
 ## 简介
 
 基于 Hook 的插件管理器 , 提供常用的管理功能
